@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function SelectMethod() {
   const router = useRouter();
   const [selectedMethod, setSelectedMethod] = useState('');
+  const [error, setError] = useState('');
   
   const methods = [
     { id: 'sms', icon: '💬', label: 'Text Message (SMS)' },
@@ -13,10 +14,21 @@ export default function SelectMethod() {
     { id: 'call', icon: '📞', label: 'Phone Call' }
   ];
   
+  const handleMethodSelect = (methodId: string) => {
+    setSelectedMethod(methodId);
+    setError(''); // Clear error when a method is selected
+  };
+  
   const handleContinue = () => {
-    if (selectedMethod) {
-      router.push('/auth/verify-code');
+    // Validation: Check if a method is selected
+    if (!selectedMethod) {
+      setError('Please select a verification method to continue');
+      return;
     }
+    
+    // Clear error and proceed
+    setError('');
+    router.push('/auth/verify-code');
   };
   
   return (
@@ -37,11 +49,11 @@ export default function SelectMethod() {
       </Text>
       
       {/* Method Options */}
-      <View style={{ marginBottom: 32 }}>
+      <View style={{ marginBottom: 16 }}>
         {methods.map((method) => (
           <Pressable
             key={method.id}
-            onPress={() => setSelectedMethod(method.id)}
+            onPress={() => handleMethodSelect(method.id)}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -87,6 +99,22 @@ export default function SelectMethod() {
           </Pressable>
         ))}
       </View>
+      
+      {/* Error Message */}
+      {error ? (
+        <View style={{ 
+          backgroundColor: '#FEE2E2', 
+          padding: 12, 
+          borderRadius: 8, 
+          marginBottom: 24,
+          borderLeftWidth: 4,
+          borderLeftColor: '#EF5B5B'
+        }}>
+          <Text style={{ color: '#EF5B5B', fontSize: 14 }}>
+            {error}
+          </Text>
+        </View>
+      ) : null}
       
       {/* Verification Code Section */}
       <View style={{ marginBottom: 32 }}>

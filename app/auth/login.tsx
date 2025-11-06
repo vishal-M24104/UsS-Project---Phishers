@@ -7,10 +7,66 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  
+  // Email validation
+  const validateEmail = (text: string) => {
+    setEmail(text);
+    setEmailError('');
+    
+    if (!text) {
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(text)) {
+      setEmailError('Please enter a valid email address');
+    }
+  };
+  
+  // Password validation
+  const validatePassword = (text: string) => {
+    setPassword(text);
+    setPasswordError('');
+    
+    if (!text) {
+      return;
+    }
+    
+    if (text.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+    }
+  };
   
   const handleLogin = () => {
-    // Add your login logic here
-    router.push('/auth/select-method');
+    let hasError = false;
+    
+    // Check if email is empty
+    if (!email) {
+      setEmailError('Email is required');
+      hasError = true;
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailError('Please enter a valid email address');
+        hasError = true;
+      }
+    }
+    
+    // Check if password is empty
+    if (!password) {
+      setPasswordError('Password is required');
+      hasError = true;
+    } else if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      hasError = true;
+    }
+    
+    // If no errors, proceed
+    if (!hasError) {
+      router.push('/auth/select-method');
+    }
   };
   
   return (
@@ -35,7 +91,7 @@ export default function Login() {
             flexDirection: 'row', 
             alignItems: 'center',
             borderWidth: 1, 
-            borderColor: '#ddd', 
+            borderColor: emailError ? '#EF5B5B' : '#ddd', 
             borderRadius: 8,
             paddingHorizontal: 12,
             backgroundColor: '#f9f9f9'
@@ -43,7 +99,7 @@ export default function Login() {
             <Text style={{ marginRight: 8, color: '#999' }}>✉</Text>
             <TextInput
               value={email}
-              onChangeText={setEmail}
+              onChangeText={validateEmail}
               placeholder="john.doe@example.com"
               keyboardType="email-address"
               autoCapitalize="none"
@@ -55,6 +111,11 @@ export default function Login() {
               }}
             />
           </View>
+          {emailError ? (
+            <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>
+              {emailError}
+            </Text>
+          ) : null}
         </View>
         
         {/* Password Input */}
@@ -66,7 +127,7 @@ export default function Login() {
             flexDirection: 'row', 
             alignItems: 'center',
             borderWidth: 1, 
-            borderColor: '#ddd', 
+            borderColor: passwordError ? '#EF5B5B' : '#ddd', 
             borderRadius: 8,
             paddingHorizontal: 12,
             backgroundColor: '#f9f9f9'
@@ -74,7 +135,7 @@ export default function Login() {
             <Text style={{ marginRight: 8, color: '#999' }}>🔒</Text>
             <TextInput
               value={password}
-              onChangeText={setPassword}
+              onChangeText={validatePassword}
               placeholder="Enter your password"
               secureTextEntry
               style={{ 
@@ -85,6 +146,11 @@ export default function Login() {
               }}
             />
           </View>
+          {passwordError ? (
+            <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>
+              {passwordError}
+            </Text>
+          ) : null}
         </View>
         
         {/* Login Button */}

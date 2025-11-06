@@ -10,9 +10,129 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  
+  // Name validation
+  const validateName = (text: string) => {
+    setName(text);
+    setNameError('');
+    
+    if (!text) {
+      return;
+    }
+    
+    if (text.trim().length < 2) {
+      setNameError('Name must be at least 2 characters');
+    }
+  };
+  
+  // Email validation
+  const validateEmail = (text: string) => {
+    setEmail(text);
+    setEmailError('');
+    
+    if (!text) {
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(text)) {
+      setEmailError('Please enter a valid email address');
+    }
+  };
+  
+  // Password validation
+  const validatePassword = (text: string) => {
+    setPassword(text);
+    setPasswordError('');
+    
+    if (!text) {
+      return;
+    }
+    
+    if (text.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(text)) {
+      setPasswordError('Password must contain uppercase and lowercase letters');
+    } else if (!/(?=.*\d)/.test(text)) {
+      setPasswordError('Password must contain at least one number');
+    }
+    
+    // Revalidate confirm password if it has a value
+    if (confirmPassword) {
+      validateConfirmPassword(confirmPassword);
+    }
+  };
+  
+  // Confirm password validation
+  const validateConfirmPassword = (text: string) => {
+    setConfirmPassword(text);
+    setConfirmPasswordError('');
+    
+    if (!text) {
+      return;
+    }
+    
+    if (text !== password) {
+      setConfirmPasswordError('Passwords do not match');
+    }
+  };
+  
   const handleSignUp = () => {
-    // Add your sign up logic here
-    router.push('/auth/select-method');
+    let hasError = false;
+    
+    // Validate name
+    if (!name.trim()) {
+      setNameError('Name is required');
+      hasError = true;
+    } else if (name.trim().length < 2) {
+      setNameError('Name must be at least 2 characters');
+      hasError = true;
+    }
+    
+    // Validate email
+    if (!email) {
+      setEmailError('Email is required');
+      hasError = true;
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailError('Please enter a valid email address');
+        hasError = true;
+      }
+    }
+    
+    // Validate password
+    if (!password) {
+      setPasswordError('Password is required');
+      hasError = true;
+    } else if (password.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      hasError = true;
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(password)) {
+      setPasswordError('Password must contain uppercase and lowercase letters');
+      hasError = true;
+    } else if (!/(?=.*\d)/.test(password)) {
+      setPasswordError('Password must contain at least one number');
+      hasError = true;
+    }
+    
+    // Validate confirm password
+    if (!confirmPassword) {
+      setConfirmPasswordError('Please confirm your password');
+      hasError = true;
+    } else if (confirmPassword !== password) {
+      setConfirmPasswordError('Passwords do not match');
+      hasError = true;
+    }
+    
+    // If no errors, proceed
+    if (!hasError) {
+      router.push('/auth/select-method');
+    }
   };
   
   return (
@@ -37,7 +157,7 @@ export default function SignUp() {
             flexDirection: 'row', 
             alignItems: 'center',
             borderWidth: 1, 
-            borderColor: '#ddd', 
+            borderColor: nameError ? '#EF5B5B' : '#ddd', 
             borderRadius: 8,
             paddingHorizontal: 12,
             backgroundColor: '#f9f9f9'
@@ -45,7 +165,7 @@ export default function SignUp() {
             <Text style={{ marginRight: 8, color: '#999' }}>👤</Text>
             <TextInput
               value={name}
-              onChangeText={setName}
+              onChangeText={validateName}
               placeholder="John Doe"
               autoCapitalize="words"
               style={{ 
@@ -56,6 +176,11 @@ export default function SignUp() {
               }}
             />
           </View>
+          {nameError ? (
+            <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>
+              {nameError}
+            </Text>
+          ) : null}
         </View>
         
         {/* Email Input */}
@@ -67,7 +192,7 @@ export default function SignUp() {
             flexDirection: 'row', 
             alignItems: 'center',
             borderWidth: 1, 
-            borderColor: '#ddd', 
+            borderColor: emailError ? '#EF5B5B' : '#ddd', 
             borderRadius: 8,
             paddingHorizontal: 12,
             backgroundColor: '#f9f9f9'
@@ -75,7 +200,7 @@ export default function SignUp() {
             <Text style={{ marginRight: 8, color: '#999' }}>✉</Text>
             <TextInput
               value={email}
-              onChangeText={setEmail}
+              onChangeText={validateEmail}
               placeholder="john.doe@example.com"
               keyboardType="email-address"
               autoCapitalize="none"
@@ -87,6 +212,11 @@ export default function SignUp() {
               }}
             />
           </View>
+          {emailError ? (
+            <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>
+              {emailError}
+            </Text>
+          ) : null}
         </View>
         
         {/* Password Input */}
@@ -98,7 +228,7 @@ export default function SignUp() {
             flexDirection: 'row', 
             alignItems: 'center',
             borderWidth: 1, 
-            borderColor: '#ddd', 
+            borderColor: passwordError ? '#EF5B5B' : '#ddd', 
             borderRadius: 8,
             paddingHorizontal: 12,
             backgroundColor: '#f9f9f9'
@@ -106,7 +236,7 @@ export default function SignUp() {
             <Text style={{ marginRight: 8, color: '#999' }}>🔒</Text>
             <TextInput
               value={password}
-              onChangeText={setPassword}
+              onChangeText={validatePassword}
               placeholder="Enter your password"
               secureTextEntry
               style={{ 
@@ -117,6 +247,11 @@ export default function SignUp() {
               }}
             />
           </View>
+          {passwordError ? (
+            <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>
+              {passwordError}
+            </Text>
+          ) : null}
         </View>
         
         {/* Confirm Password Input */}
@@ -128,7 +263,7 @@ export default function SignUp() {
             flexDirection: 'row', 
             alignItems: 'center',
             borderWidth: 1, 
-            borderColor: '#ddd', 
+            borderColor: confirmPasswordError ? '#EF5B5B' : '#ddd', 
             borderRadius: 8,
             paddingHorizontal: 12,
             backgroundColor: '#f9f9f9'
@@ -136,7 +271,7 @@ export default function SignUp() {
             <Text style={{ marginRight: 8, color: '#999' }}>🔒</Text>
             <TextInput
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={validateConfirmPassword}
               placeholder="Re-enter your password"
               secureTextEntry
               style={{ 
@@ -147,6 +282,11 @@ export default function SignUp() {
               }}
             />
           </View>
+          {confirmPasswordError ? (
+            <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>
+              {confirmPasswordError}
+            </Text>
+          ) : null}
         </View>
         
         {/* Sign Up Button */}

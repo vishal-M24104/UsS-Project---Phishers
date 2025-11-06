@@ -7,23 +7,47 @@ export default function VerifyCode() {
   const router = useRouter();
 
   const [code, setCode] = useState<string[]>(['', '', '', '', '', '']);
+  const [error, setError] = useState('');
 
-  // ✅ Tell TypeScript these are TextInput refs
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
   const handleCodeChange = (text: string, index: number) => {
+    // Only allow numbers
+    const numericText = text.replace(/[^0-9]/g, '');
+    
+    if (numericText.length > 1) {
+      // If user pastes multiple digits, split them across inputs
+      const digits = numericText.split('').slice(0, 6);
+      const newCode = [...code];
+      
+      digits.forEach((digit, i) => {
+        if (index + i < 6) {
+          newCode[index + i] = digit;
+        }
+      });
+      
+      setCode(newCode);
+      setError('');
+      
+      // Focus on the next empty input or last input
+      const nextIndex = Math.min(index + digits.length, 5);
+      inputRefs.current[nextIndex]?.focus();
+      return;
+    }
+    
     const newCode = [...code];
-    newCode[index] = text;
+    newCode[index] = numericText;
     setCode(newCode);
+    setError('');
 
-    // ✅ Move focus to next input automatically
-    if (text && index < 5) {
+    // Move focus to next input automatically
+    if (numericText && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
   const handleKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
-    // ✅ Handle backspace and move focus left
+    // Handle backspace and move focus left
     if (e.nativeEvent.key === 'Backspace' && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -31,10 +55,35 @@ export default function VerifyCode() {
 
   const handleContinue = () => {
     const fullCode = code.join('');
-    if (fullCode.length === 6) {
-      router.push('/auth/success');
+    
+    // Validation: Check if all 6 digits are entered
+    if (fullCode.length !== 6) {
+      setError('Please enter all 6 digits');
+      return;
     }
+    
+    // Validation: Check if all characters are numbers
+    if (!/^\d{6}$/.test(fullCode)) {
+      setError('Verification code must contain only numbers');
+      return;
+    }
+    
+    // Clear error and proceed
+    setError('');
+    router.push('/auth/success');
   };
+  
+  const handleResendCode = () => {
+    // Clear current code
+    setCode(['', '', '', '', '', '']);
+    setError('');
+    // Focus on first input
+    inputRefs.current[0]?.focus();
+    // Here you would typically make an API call to resend the code
+  };
+
+  // Check if all digits are filled
+  const isCodeComplete = code.every(digit => digit !== '') && code.join('').length === 6;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white', padding: 24 }}>
@@ -89,7 +138,7 @@ export default function VerifyCode() {
         </Text>
 
         {/* Code Inputs */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
           {code.map((digit, index) => (
             <TextInput
               key={index}
@@ -103,7 +152,7 @@ export default function VerifyCode() {
                 width: 48,
                 height: 56,
                 borderWidth: 2,
-                borderColor: digit ? '#5B5FEF' : '#E5E5E5',
+                borderColor: error ? '#EF5B5B' : (digit ? '#5B5FEF' : '#E5E5E5'),
                 borderRadius: 8,
                 textAlign: 'center',
                 fontSize: 24,
@@ -115,8 +164,15 @@ export default function VerifyCode() {
           ))}
         </View>
 
+        {/* Error Message */}
+        {error ? (
+          <Text style={{ color: '#EF5B5B', fontSize: 12, marginBottom: 16, textAlign: 'center' }}>
+            {error}
+          </Text>
+        ) : null}
+
         {/* Resend Code */}
-        <Pressable style={{ alignItems: 'center' }}>
+        <Pressable onPress={handleResendCode} style={{ alignItems: 'center' }}>
           <Text style={{ color: '#5B5FEF', fontWeight: '600' }}>Resend Code</Text>
         </Pressable>
       </View>
@@ -124,9 +180,9 @@ export default function VerifyCode() {
       {/* Continue Button */}
       <Pressable
         onPress={handleContinue}
-        disabled={code.join('').length !== 6}
+        disabled={!isCodeComplete}
         style={{
-          backgroundColor: code.join('').length === 6 ? '#5B5FEF' : '#C5C7F0',
+          backgroundColor: isCodeComplete ? '#5B5FEF' : '#C5C7F0',
           padding: 16,
           borderRadius: 8,
           marginTop: 'auto',
