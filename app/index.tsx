@@ -17,7 +17,7 @@ export default function Onboarding() {
         
         <View style={{ width: '100%', marginTop: 48 }}>
           <Pressable 
-            onPress={() => router.push('/signup')}
+            onPress={() => router.push('/auth/signup')}
             style={{ 
               backgroundColor: '#5B5FEF', 
               padding: 16, 
@@ -31,7 +31,7 @@ export default function Onboarding() {
           </Pressable>
           
           <Pressable 
-            onPress={() => router.push('/login')}
+            onPress={() => router.push('/auth/login')}
             style={{ 
               borderWidth: 2, 
               borderColor: '#5B5FEF', 

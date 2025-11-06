@@ -32,7 +32,7 @@ export default function VerifyCode() {
   const handleContinue = () => {
     const fullCode = code.join('');
     if (fullCode.length === 6) {
-      router.push('/success');
+      router.push('/auth/success');
     }
   };
 

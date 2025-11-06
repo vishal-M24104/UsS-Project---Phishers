@@ -12,7 +12,7 @@ export default function SignUp() {
   
   const handleSignUp = () => {
     // Add your sign up logic here
-    router.push('/select-method');
+    router.push('/auth/select-method');
   };
   
   return (
@@ -172,7 +172,7 @@ export default function SignUp() {
         {/* Login Link */}
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: '#666' }}>Already have an account? </Text>
-          <Pressable onPress={() => router.push('/login')}>
+          <Pressable onPress={() => router.push('/auth/login')}>
             <Text style={{ color: '#5B5FEF', fontWeight: '600' }}>Login</Text>
           </Pressable>
         </View>

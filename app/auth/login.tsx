@@ -10,7 +10,7 @@ export default function Login() {
   
   const handleLogin = () => {
     // Add your login logic here
-    router.push('/select-method');
+    router.push('/auth/select-method');
   };
   
   return (
@@ -104,7 +104,7 @@ export default function Login() {
         
         {/* Sign Up Button */}
         <Pressable 
-          onPress={() => router.push('/signup')}
+          onPress={() => router.push('/auth/signup')}
           style={{ 
             borderWidth: 2, 
             borderColor: '#5B5FEF', 

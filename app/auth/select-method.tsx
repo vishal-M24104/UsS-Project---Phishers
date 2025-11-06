@@ -15,7 +15,7 @@ export default function SelectMethod() {
   
   const handleContinue = () => {
     if (selectedMethod) {
-      router.push('/verify-code');
+      router.push('/auth/verify-code');
     }
   };
   
