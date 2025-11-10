@@ -71,6 +71,9 @@ export default function LearningModules() {
           {modules.map((module) => (
             <Pressable 
               key={module.id}
+              onPress={() => {
+                if (module.title === 'Games') router.push('/modules/games');
+            }}
               style={{ 
                 width: '48%',
                 backgroundColor: module.color,
