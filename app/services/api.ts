@@ -81,24 +81,44 @@ class ApiService {
         headers.Authorization = `Bearer ${token}`;
       }
 
+      console.log('Making request to:', `${this.baseURL}${endpoint}`);
+      console.log('Request headers:', headers);
+      console.log('Request body:', options.body);
+
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
         headers,
       });
 
+      console.log('Response status:', response.status);
+
       let data;
-      try {
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
         data = await response.json();
-      } catch {
-        data = null; // fallback if JSON parse fails
+        console.log('Response data:', data);
+      } else {
+        const text = await response.text();
+        console.log('Response text:', text);
+        throw new Error('Server returned non-JSON response');
       }
 
       if (!response.ok) {
-        throw new Error((data && data.message) || 'Something went wrong');
+        // Extract error message from various possible formats
+        const errorMessage = data?.message || data?.error || 'Something went wrong';
+        throw new Error(errorMessage);
       }
 
       return data;
     } catch (error: any) {
+      console.error('API request error:', error);
+      
+      // Handle network errors
+      if (error.message === 'Network request failed') {
+        throw new Error('Cannot connect to server. Please check your connection and ensure the backend is running.');
+      }
+      
       throw new Error(error.message || 'Network error');
     }
   }
@@ -133,12 +153,21 @@ class ApiService {
 // Auth Service - extends ApiService with auth-specific methods
 class AuthService extends ApiService {
   async login(credentials: { email: string; password: string }): Promise<AuthResponse> {
-    const response = await this.post<AuthResponse>('/auth/login', credentials);
+    const response = await this.post<any>('/auth/login', credentials);
     
-    // Handle both response formats: { success, data: { user, token } } or { success, user, token }
-    const authData: AuthResponse = (response.data || response) as AuthResponse;
+    // Backend returns: { success: true, message: "...", data: { user, token } }
+    if (!response.data || !response.data.user) {
+      throw new Error('Invalid response format from server');
+    }
     
-    if (response.success && authData.token) {
+    const authData: AuthResponse = {
+      success: response.success,
+      message: response.message,
+      user: response.data.user,
+      token: response.data.token
+    };
+    
+    if (authData.success && authData.token) {
       await this.saveAuthToken(authData.token);
     }
     
@@ -146,16 +175,34 @@ class AuthService extends ApiService {
   }
 
   async signUp(userData: { name: string; email: string; password: string }): Promise<AuthResponse> {
-    const response = await this.post<AuthResponse>('/auth/signup', userData);
-    
-    // Handle both response formats: { success, data: { user, token } } or { success, user, token }
-    const authData: AuthResponse = (response.data || response) as AuthResponse;
-    
-    if (response.success && authData.token) {
-      await this.saveAuthToken(authData.token);
+    try {
+      const response = await this.post<any>('/auth/signup', userData);
+      
+      console.log('SignUp API response:', response);
+      
+      // Backend returns: { success: true, message: "...", data: { user, token } }
+      if (!response.data || !response.data.user) {
+        throw new Error('Invalid response format from server');
+      }
+      
+      const authData: AuthResponse = {
+        success: response.success,
+        message: response.message,
+        user: response.data.user,
+        token: response.data.token
+      };
+      
+      // Save token if present
+      if (authData.success && authData.token) {
+        await this.saveAuthToken(authData.token);
+        console.log('Auth token saved successfully');
+      }
+      
+      return authData;
+    } catch (error: any) {
+      console.error('SignUp service error:', error);
+      throw error;
     }
-    
-    return authData;
   }
 
   async verifyCode(data: { code: string; userId?: string }) {
@@ -168,8 +215,14 @@ class AuthService extends ApiService {
   }
 
   async getCurrentUser(): Promise<User> {
-    const response = await this.get<User>('/auth/me');
-    return (response.data || response) as User;
+    const response = await this.get<any>('/auth/profile');
+    
+    // Backend returns: { success: true, data: { user } }
+    if (!response.data) {
+      throw new Error('Invalid response format from server');
+    }
+    
+    return response.data as User;
   }
 }
 

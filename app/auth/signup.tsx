@@ -135,24 +135,54 @@ export default function SignUp() {
     if (!hasError) {
       setLoading(true);
       try {
+        console.log('Attempting signup with:', {
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          // Don't log password in production!
+        });
+
         const response = await authService.signUp({
           name: name.trim(),
           email: email.trim().toLowerCase(),
           password,
         });
 
-        Alert.alert(
-          'Success',
-          'Account created successfully!',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.push('/auth/select-method'),
-            },
-          ]
-        );
+        console.log('Signup response:', response);
+
+        // Check if signup was successful
+        if (response && response.user) {
+          Alert.alert(
+            'Success',
+            'Account created successfully!',
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  // Navigate to select method or login
+                  router.replace('/auth/select-method');
+                },
+              },
+            ]
+          );
+        } else {
+          throw new Error('Invalid response from server');
+        }
       } catch (error: any) {
-        Alert.alert('Error', error.message || 'Failed to create account');
+        console.error('Signup error:', error);
+        
+        // More detailed error handling
+        let errorMessage = 'Failed to create account';
+        
+        if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        // Check for specific error cases
+        if (error.message?.toLowerCase().includes('email')) {
+          setEmailError('This email is already registered');
+        }
+        
+        Alert.alert('Error', errorMessage);
       } finally {
         setLoading(false);
       }
