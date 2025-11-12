@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { authService } from '../services/api';
 
 export default function SignUp() {
   const router = useRouter();
@@ -9,6 +10,7 @@ export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -81,7 +83,7 @@ export default function SignUp() {
     }
   };
   
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     let hasError = false;
     
     // Validate name
@@ -129,9 +131,31 @@ export default function SignUp() {
       hasError = true;
     }
     
-    // If no errors, proceed
+    // If no errors, proceed with API call
     if (!hasError) {
-      router.push('/auth/select-method');
+      setLoading(true);
+      try {
+        const response = await authService.signUp({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password,
+        });
+
+        Alert.alert(
+          'Success',
+          'Account created successfully!',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.push('/auth/select-method'),
+            },
+          ]
+        );
+      } catch (error: any) {
+        Alert.alert('Error', error.message || 'Failed to create account');
+      } finally {
+        setLoading(false);
+      }
     }
   };
   
@@ -168,6 +192,7 @@ export default function SignUp() {
               onChangeText={validateName}
               placeholder="John Doe"
               autoCapitalize="words"
+              editable={!loading}
               style={{ 
                 flex: 1, 
                 paddingVertical: 14,
@@ -204,6 +229,7 @@ export default function SignUp() {
               placeholder="john.doe@example.com"
               keyboardType="email-address"
               autoCapitalize="none"
+              editable={!loading}
               style={{ 
                 flex: 1, 
                 paddingVertical: 14,
@@ -239,6 +265,7 @@ export default function SignUp() {
               onChangeText={validatePassword}
               placeholder="Enter your password"
               secureTextEntry
+              editable={!loading}
               style={{ 
                 flex: 1, 
                 paddingVertical: 14,
@@ -274,6 +301,7 @@ export default function SignUp() {
               onChangeText={validateConfirmPassword}
               placeholder="Re-enter your password"
               secureTextEntry
+              editable={!loading}
               style={{ 
                 flex: 1, 
                 paddingVertical: 14,
@@ -292,15 +320,22 @@ export default function SignUp() {
         {/* Sign Up Button */}
         <Pressable 
           onPress={handleSignUp}
+          disabled={loading}
           style={{ 
-            backgroundColor: '#5B5FEF', 
+            backgroundColor: loading ? '#9999FF' : '#5B5FEF', 
             padding: 16, 
             borderRadius: 8,
-            marginBottom: 16 
+            marginBottom: 16,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center'
           }}
         >
+          {loading ? (
+            <ActivityIndicator color="white" style={{ marginRight: 8 }} />
+          ) : null}
           <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600', fontSize: 16 }}>
-            Sign Up
+            {loading ? 'Creating Account...' : 'Sign Up'}
           </Text>
         </Pressable>
         
@@ -312,7 +347,7 @@ export default function SignUp() {
         {/* Login Link */}
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: '#666' }}>Already have an account? </Text>
-          <Pressable onPress={() => router.push('/auth/login')}>
+          <Pressable onPress={() => router.push('/auth/login')} disabled={loading}>
             <Text style={{ color: '#5B5FEF', fontWeight: '600' }}>Login</Text>
           </Pressable>
         </View>

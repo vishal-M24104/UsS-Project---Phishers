@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { authService } from '../services/api';
 
 export default function Login() {
   const router = useRouter();
@@ -9,6 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [loading, setLoading] = useState(false);
   
   // Email validation
   const validateEmail = (text: string) => {
@@ -39,7 +41,7 @@ export default function Login() {
     }
   };
   
-  const handleLogin = () => {
+  const handleLogin = async () => {
     let hasError = false;
     
     // Check if email is empty
@@ -63,9 +65,28 @@ export default function Login() {
       hasError = true;
     }
     
-    // If no errors, proceed
+    // If no errors, proceed with API call
     if (!hasError) {
-      router.push('/auth/select-method');
+      setLoading(true);
+      try {
+        const response = await authService.login({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+
+        // Check if 2FA is enabled
+        if (response.user.twoFactorEnabled) {
+          // Navigate to 2FA verification
+          router.push('/auth/select-method');
+        } else {
+          // Navigate to home
+          router.push('/home');
+        }
+      } catch (error: any) {
+        Alert.alert('Error', error.message || 'Login failed');
+      } finally {
+        setLoading(false);
+      }
     }
   };
   
@@ -103,6 +124,7 @@ export default function Login() {
               placeholder="john.doe@example.com"
               keyboardType="email-address"
               autoCapitalize="none"
+              editable={!loading}
               style={{ 
                 flex: 1, 
                 paddingVertical: 14,
@@ -138,6 +160,7 @@ export default function Login() {
               onChangeText={validatePassword}
               placeholder="Enter your password"
               secureTextEntry
+              editable={!loading}
               style={{ 
                 flex: 1, 
                 paddingVertical: 14,
@@ -156,27 +179,36 @@ export default function Login() {
         {/* Login Button */}
         <Pressable 
           onPress={handleLogin}
+          disabled={loading}
           style={{ 
-            backgroundColor: '#5B5FEF', 
+            backgroundColor: loading ? '#9999FF' : '#5B5FEF', 
             padding: 16, 
             borderRadius: 8,
-            marginBottom: 16 
+            marginBottom: 16,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center'
           }}
         >
+          {loading ? (
+            <ActivityIndicator color="white" style={{ marginRight: 8 }} />
+          ) : null}
           <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600', fontSize: 16 }}>
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </Text>
         </Pressable>
         
         {/* Sign Up Button */}
         <Pressable 
           onPress={() => router.push('/auth/signup')}
+          disabled={loading}
           style={{ 
             borderWidth: 2, 
             borderColor: '#5B5FEF', 
             padding: 16, 
             borderRadius: 8,
-            marginBottom: 16
+            marginBottom: 16,
+            opacity: loading ? 0.5 : 1
           }}
         >
           <Text style={{ color: '#5B5FEF', textAlign: 'center', fontWeight: '600', fontSize: 16 }}>
@@ -192,7 +224,8 @@ export default function Login() {
         {/* Continue as Guest */}
         <Pressable 
           onPress={() => router.push('/home')}
-          style={{ alignItems: 'center', paddingVertical: 8 }}
+          disabled={loading}
+          style={{ alignItems: 'center', paddingVertical: 8, opacity: loading ? 0.5 : 1 }}
         >
           <Text style={{ color: '#666', fontWeight: '500' }}>
             Continue as Guest
