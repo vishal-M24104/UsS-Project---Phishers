@@ -1,9 +1,15 @@
+// app/(tabs)/home.tsx
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuthStore } from '../app/store/authStore';
 
 export default function Home() {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  
+  // Get first name from full name or use default
+  const firstName = user?.name?.split(' ')[0] || 'Guest';
   
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -21,19 +27,52 @@ export default function Home() {
             width: 40, 
             height: 40, 
             borderRadius: 20, 
-            backgroundColor: '#FF6B6B',
+            backgroundColor: '#5B5FEF',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <Text style={{ fontSize: 20 }}>💣</Text>
+            <Text style={{ fontSize: 18, color: 'white', fontWeight: 'bold' }}>
+              {user ? firstName.charAt(0).toUpperCase() : '👤'}
+            </Text>
           </View>
         </View>
 
         <View style={{ padding: 20, paddingTop: 0 }}>
           {/* Greeting */}
           <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 20 }}>
-            Hello, Yash!
+            Hello, {firstName}!
           </Text>
+
+          {/* User Status */}
+          {user ? (
+            <View style={{ 
+              backgroundColor: '#E8F5E9', 
+              padding: 12, 
+              borderRadius: 8,
+              marginBottom: 20,
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}>
+              <Text style={{ fontSize: 16, marginRight: 8 }}>✓</Text>
+              <Text style={{ color: '#2E7D32', fontSize: 14 }}>
+                Logged in as {user.email}
+              </Text>
+            </View>
+          ) : (
+            <View style={{ 
+              backgroundColor: '#FFF3E0', 
+              padding: 12, 
+              borderRadius: 8,
+              marginBottom: 20,
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}>
+              <Text style={{ fontSize: 16, marginRight: 8 }}>⚠️</Text>
+              <Text style={{ color: '#E65100', fontSize: 14 }}>
+                You're browsing as a guest
+              </Text>
+            </View>
+          )}
 
           {/* Points Card */}
           <View style={{ 

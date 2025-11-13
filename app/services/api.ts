@@ -1,5 +1,6 @@
 // app/services/api.tsx
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuthStore } from '../store/authStore';
 
 // Update this with your backend URL
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -36,31 +37,18 @@ class ApiService {
     this.baseURL = API_BASE_URL;
   }
 
-  // Get auth token from storage
+  // Get auth token from Zustand store or AsyncStorage
   private async getAuthToken(): Promise<string | null> {
     try {
+      // Try to get from Zustand store first
+      const token = useAuthStore.getState().token;
+      if (token) return token;
+      
+      // Fallback to AsyncStorage
       return await AsyncStorage.getItem('authToken');
     } catch (error) {
       console.error('Error getting auth token:', error);
       return null;
-    }
-  }
-
-  // Save auth token to storage
-  async saveAuthToken(token: string): Promise<void> {
-    try {
-      await AsyncStorage.setItem('authToken', token);
-    } catch (error) {
-      console.error('Error saving auth token:', error);
-    }
-  }
-
-  // Remove auth token from storage
-  async removeAuthToken(): Promise<void> {
-    try {
-      await AsyncStorage.removeItem('authToken');
-    } catch (error) {
-      console.error('Error removing auth token:', error);
     }
   }
 
@@ -82,8 +70,6 @@ class ApiService {
       }
 
       console.log('Making request to:', `${this.baseURL}${endpoint}`);
-      console.log('Request headers:', headers);
-      console.log('Request body:', options.body);
 
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
@@ -105,6 +91,11 @@ class ApiService {
       }
 
       if (!response.ok) {
+        // Handle unauthorized - logout user
+        if (response.status === 401) {
+          useAuthStore.getState().logout();
+        }
+        
         // Extract error message from various possible formats
         const errorMessage = data?.message || data?.error || 'Something went wrong';
         throw new Error(errorMessage);
@@ -155,7 +146,6 @@ class AuthService extends ApiService {
   async login(credentials: { email: string; password: string }): Promise<AuthResponse> {
     const response = await this.post<any>('/auth/login', credentials);
     
-    // Backend returns: { success: true, message: "...", data: { user, token } }
     if (!response.data || !response.data.user) {
       throw new Error('Invalid response format from server');
     }
@@ -167,8 +157,9 @@ class AuthService extends ApiService {
       token: response.data.token
     };
     
+    // Save to Zustand store
     if (authData.success && authData.token) {
-      await this.saveAuthToken(authData.token);
+      await useAuthStore.getState().login(authData.user, authData.token);
     }
     
     return authData;
@@ -180,7 +171,6 @@ class AuthService extends ApiService {
       
       console.log('SignUp API response:', response);
       
-      // Backend returns: { success: true, message: "...", data: { user, token } }
       if (!response.data || !response.data.user) {
         throw new Error('Invalid response format from server');
       }
@@ -192,11 +182,8 @@ class AuthService extends ApiService {
         token: response.data.token
       };
       
-      // Save token if present
-      if (authData.success && authData.token) {
-        await this.saveAuthToken(authData.token);
-        console.log('Auth token saved successfully');
-      }
+      // Note: We're NOT logging in automatically after signup
+      // User will be redirected to login page
       
       return authData;
     } catch (error: any) {
@@ -205,24 +192,22 @@ class AuthService extends ApiService {
     }
   }
 
-  async verifyCode(data: { code: string; userId?: string }) {
-    const response = await this.post('/auth/verify-code', data);
-    return response.data || response;
-  }
-
-  async logout() {
-    await this.removeAuthToken();
-  }
-
   async getCurrentUser(): Promise<User> {
     const response = await this.get<any>('/auth/profile');
     
-    // Backend returns: { success: true, data: { user } }
     if (!response.data) {
       throw new Error('Invalid response format from server');
     }
     
+    // Update user in store
+    useAuthStore.getState().setUser(response.data);
+    
     return response.data as User;
+  }
+
+  async logout() {
+    // Clear from Zustand store
+    await useAuthStore.getState().logout();
   }
 }
 

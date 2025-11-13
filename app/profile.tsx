@@ -1,414 +1,250 @@
+// app/(tabs)/profile.tsx
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { authService } from '../app/services/api';
+import { useAuthStore } from '../app/store/authStore';
 
 export default function Profile() {
   const router = useRouter();
+  const { user, logout } = useAuthStore();
+  
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await authService.logout();
+              router.replace('/auth/login');
+            } catch (error) {
+              console.error('Logout error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
   
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <ScrollView style={{ flex: 1 }}>
         {/* Header */}
         <View style={{ 
-          flexDirection: 'row', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          padding: 20
+          padding: 20,
+          paddingTop: 10
         }}>
-          <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Your Phish Finder Profile</Text>
-          <View style={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: 20, 
-            backgroundColor: '#FF6B6B',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Text style={{ fontSize: 20 }}>💣</Text>
-          </View>
-        </View>
-
-        <View style={{ padding: 20, paddingTop: 0 }}>
-          {/* User Profile Card */}
-          <View style={{ 
-            backgroundColor: 'white',
-            borderRadius: 16,
-            padding: 20,
-            marginBottom: 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 3
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+          <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
+            Profile
+          </Text>
+          
+          {user ? (
+            <>
+              {/* User Info Card */}
               <View style={{ 
-                width: 60, 
-                height: 60, 
-                borderRadius: 30, 
-                backgroundColor: '#E0E0E0',
-                marginRight: 16,
-                position: 'relative'
+                backgroundColor: '#F5F5FF', 
+                padding: 20, 
+                borderRadius: 16,
+                marginBottom: 20,
+                alignItems: 'center'
               }}>
-                <Text style={{ fontSize: 40, textAlign: 'center', lineHeight: 60 }}>👤</Text>
                 <View style={{ 
-                  position: 'absolute', 
-                  bottom: 0, 
-                  right: 0, 
-                  width: 16, 
-                  height: 16, 
-                  borderRadius: 8, 
-                  backgroundColor: '#4CAF50',
-                  borderWidth: 2,
-                  borderColor: 'white'
-                }} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 4 }}>
-                  Yash Tupe
+                  width: 80, 
+                  height: 80, 
+                  borderRadius: 40, 
+                  backgroundColor: '#5B5FEF',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 16
+                }}>
+                  <Text style={{ fontSize: 36, color: 'white', fontWeight: 'bold' }}>
+                    {user.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                
+                <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 4 }}>
+                  {user.name}
                 </Text>
-                <Text style={{ fontSize: 14, color: '#666' }}>
-                  Cybersecurity Analyst
+                <Text style={{ color: '#666', fontSize: 14 }}>
+                  {user.email}
                 </Text>
               </View>
-              <Pressable style={{ 
-                borderWidth: 1, 
-                borderColor: '#5B5FEF', 
-                paddingHorizontal: 16, 
-                paddingVertical: 8, 
-                borderRadius: 8 
-              }}>
-                <Text style={{ color: '#5B5FEF', fontSize: 14, fontWeight: '600' }}>
-                  Edit Profile
+              
+              {/* Stats */}
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 12 }}>
+                  Statistics
+                </Text>
+                <View style={{ 
+                  backgroundColor: 'white',
+                  borderRadius: 12,
+                  padding: 16,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3
+                }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
+                        1,250
+                      </Text>
+                      <Text style={{ color: '#666', fontSize: 12 }}>Points</Text>
+                    </View>
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
+                        15
+                      </Text>
+                      <Text style={{ color: '#666', fontSize: 12 }}>Completed</Text>
+                    </View>
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
+                        #23
+                      </Text>
+                      <Text style={{ color: '#666', fontSize: 12 }}>Rank</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+              
+              {/* Settings */}
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 12 }}>
+                  Settings
+                </Text>
+                
+                <Pressable 
+                  style={{ 
+                    backgroundColor: 'white',
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 8,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3
+                  }}
+                >
+                  <Text style={{ fontSize: 20, marginRight: 12 }}>🔐</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '500' }}>
+                      Two-Factor Authentication
+                    </Text>
+                    <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                      {user.twoFactorEnabled ? 'Enabled' : 'Not enabled'}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 20, color: '#CCC' }}>›</Text>
+                </Pressable>
+                
+                <Pressable 
+                  style={{ 
+                    backgroundColor: 'white',
+                    borderRadius: 12,
+                    padding: 16,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3
+                  }}
+                >
+                  <Text style={{ fontSize: 20, marginRight: 12 }}>🔔</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '500' }}>
+                      Notifications
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 20, color: '#CCC' }}>›</Text>
+                </Pressable>
+              </View>
+              
+              {/* Logout Button */}
+              <Pressable 
+                onPress={handleLogout}
+                style={{ 
+                  backgroundColor: '#FF6B6B',
+                  padding: 16,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  marginTop: 20
+                }}
+              >
+                <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                  Logout
                 </Text>
               </Pressable>
-            </View>
-
-            {/* Total Score */}
-            <View style={{ 
-              backgroundColor: '#F5F5FF', 
-              padding: 20, 
-              borderRadius: 12,
-              alignItems: 'center'
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 16, fontWeight: '600', marginRight: 8 }}>
-                  Total Score
-                </Text>
-                <Text style={{ fontSize: 16, color: '#666' }}>ⓘ</Text>
-              </View>
-              <Text style={{ 
-                fontSize: 48, 
-                fontWeight: 'bold', 
-                color: '#5B5FEF',
-                marginBottom: 4
-              }}>
-                7890
-              </Text>
-              <Text style={{ fontSize: 14, color: '#666' }}>
-                Points collected over time
-              </Text>
-            </View>
-          </View>
-
-          {/* Badges & Achievements */}
-          <View style={{ marginBottom: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>
-              Badges & Achievements
-            </Text>
-            
-            <View style={{ flexDirection: 'row', marginBottom: 12 }}>
+            </>
+          ) : (
+            <>
+              {/* Guest View */}
               <View style={{ 
-                flex: 1, 
-                backgroundColor: 'white', 
-                borderRadius: 12, 
-                padding: 16,
-                marginRight: 8,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 2
+                backgroundColor: '#FFF3E0', 
+                padding: 20, 
+                borderRadius: 16,
+                marginBottom: 20,
+                alignItems: 'center'
               }}>
-                <View style={{ alignItems: 'center', marginBottom: 8 }}>
-                  <Text style={{ fontSize: 32, marginBottom: 8 }}>🏆</Text>
-                  <View style={{ 
-                    backgroundColor: '#FFF3CD', 
-                    paddingHorizontal: 12, 
-                    paddingVertical: 4, 
-                    borderRadius: 12 
-                  }}>
-                    <Text style={{ fontSize: 12, color: '#856404', fontWeight: '600' }}>
-                      Achieved
-                    </Text>
-                  </View>
-                </View>
-                <Text style={{ fontSize: 14, fontWeight: '600', marginBottom: 4 }}>
-                  Phishing Novice
+                <Text style={{ fontSize: 48, marginBottom: 16 }}>👤</Text>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>
+                  Guest User
                 </Text>
-                <Text style={{ fontSize: 12, color: '#666' }}>
-                  Completed your first 5 phishing awareness modules.
+                <Text style={{ color: '#666', fontSize: 14, textAlign: 'center' }}>
+                  Login to save your progress and compete on the leaderboard
                 </Text>
               </View>
-
-              <View style={{ 
-                flex: 1, 
-                backgroundColor: 'white', 
-                borderRadius: 12, 
-                padding: 16,
-                marginLeft: 8,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 2
-              }}>
-                <View style={{ alignItems: 'center', marginBottom: 8 }}>
-                  <Text style={{ fontSize: 32, marginBottom: 8 }}>🛡️</Text>
-                  <View style={{ 
-                    backgroundColor: '#D1ECF1', 
-                    paddingHorizontal: 12, 
-                    paddingVertical: 4, 
-                    borderRadius: 12 
-                  }}>
-                    <Text style={{ fontSize: 12, color: '#0C5460', fontWeight: '600' }}>
-                      Achieved
-                    </Text>
-                  </View>
-                </View>
-                <Text style={{ fontSize: 14, fontWeight: '600', marginBottom: 4 }}>
-                  Email Defender
+              
+              {/* Login/Signup Buttons */}
+              <Pressable 
+                onPress={() => router.push('/auth/login')}
+                style={{ 
+                  backgroundColor: '#5B5FEF',
+                  padding: 16,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  marginBottom: 12
+                }}
+              >
+                <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                  Login
                 </Text>
-                <Text style={{ fontSize: 12, color: '#666' }}>
-                  Successfully identified 10 sophisticated phishing emails.
+              </Pressable>
+              
+              <Pressable 
+                onPress={() => router.push('/auth/signup')}
+                style={{ 
+                  borderWidth: 2,
+                  borderColor: '#5B5FEF',
+                  padding: 16,
+                  borderRadius: 12,
+                  alignItems: 'center'
+                }}
+              >
+                <Text style={{ color: '#5B5FEF', fontSize: 16, fontWeight: '600' }}>
+                  Sign Up
                 </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Training History */}
-          <View style={{ marginBottom: 80 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>
-              Training History
-            </Text>
-
-            {/* Training Item 1 */}
-            <View style={{ 
-              backgroundColor: 'white', 
-              borderRadius: 12, 
-              padding: 16,
-              marginBottom: 12,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 2
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 20, marginRight: 12 }}>📚</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}>
-                    Advanced Phishing
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 12, color: '#666', marginRight: 12 }}>
-                      🕐 2023-11-28
-                    </Text>
-                    <Text style={{ fontSize: 12, color: '#666' }}>
-                      ⏱ 45 min
-                    </Text>
-                  </View>
-                </View>
-                <View style={{ 
-                  backgroundColor: '#E8F5E9', 
-                  paddingHorizontal: 12, 
-                  paddingVertical: 6, 
-                  borderRadius: 12 
-                }}>
-                  <Text style={{ fontSize: 12, color: '#2E7D32', fontWeight: '600' }}>
-                    Phishing
-                  </Text>
-                </View>
-              </View>
-              <View style={{ 
-                height: 6, 
-                backgroundColor: '#E0E0E0', 
-                borderRadius: 3,
-                overflow: 'hidden'
-              }}>
-                <View style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  backgroundColor: '#5B5FEF' 
-                }} />
-              </View>
-            </View>
-
-            {/* Training Item 2 */}
-            <View style={{ 
-              backgroundColor: 'white', 
-              borderRadius: 12, 
-              padding: 16,
-              marginBottom: 12,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 2
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 20, marginRight: 12 }}>🔐</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}>
-                    Password Security Best
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 12, color: '#666', marginRight: 12 }}>
-                      🕐 2023-11-20
-                    </Text>
-                    <Text style={{ fontSize: 12, color: '#666' }}>
-                      ⏱ 30 min
-                    </Text>
-                  </View>
-                </View>
-                <View style={{ 
-                  backgroundColor: '#FFF3CD', 
-                  paddingHorizontal: 12, 
-                  paddingVertical: 6, 
-                  borderRadius: 12 
-                }}>
-                  <Text style={{ fontSize: 12, color: '#856404', fontWeight: '600' }}>
-                    Credentials
-                  </Text>
-                </View>
-              </View>
-              <View style={{ 
-                height: 6, 
-                backgroundColor: '#E0E0E0', 
-                borderRadius: 3,
-                overflow: 'hidden'
-              }}>
-                <View style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  backgroundColor: '#5B5FEF' 
-                }} />
-              </View>
-            </View>
-
-            {/* Training Item 3 */}
-            <View style={{ 
-              backgroundColor: 'white', 
-              borderRadius: 12, 
-              padding: 16,
-              marginBottom: 12,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 2
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 20, marginRight: 12 }}>📖</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}>
-                    Recognizing Malicious
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 12, color: '#666', marginRight: 12 }}>
-                      🕐 2023-11-15
-                    </Text>
-                    <Text style={{ fontSize: 12, color: '#666' }}>
-                      ⏱ 25 min
-                    </Text>
-                  </View>
-                </View>
-                <View style={{ 
-                  backgroundColor: '#F8D7DA', 
-                  paddingHorizontal: 12, 
-                  paddingVertical: 6, 
-                  borderRadius: 12 
-                }}>
-                  <Text style={{ fontSize: 12, color: '#721C24', fontWeight: '600' }}>
-                    Malware
-                  </Text>
-                </View>
-              </View>
-              <View style={{ 
-                height: 6, 
-                backgroundColor: '#E0E0E0', 
-                borderRadius: 3,
-                overflow: 'hidden'
-              }}>
-                <View style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  backgroundColor: '#5B5FEF' 
-                }} />
-              </View>
-            </View>
-
-            {/* Training Item 4 */}
-            <View style={{ 
-              backgroundColor: 'white', 
-              borderRadius: 12, 
-              padding: 16,
-              marginBottom: 12,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 2
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 20, marginRight: 12 }}>📖</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}>
-                    Two-Factor Authentication
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 12, color: '#666', marginRight: 12 }}>
-                      🕐 2023-11-01
-                    </Text>
-                    <Text style={{ fontSize: 12, color: '#666' }}>
-                      ⏱ 15 min
-                    </Text>
-                  </View>
-                </View>
-                <View style={{ 
-                  backgroundColor: '#E8F5E9', 
-                  paddingHorizontal: 12, 
-                  paddingVertical: 6, 
-                  borderRadius: 12 
-                }}>
-                  <Text style={{ fontSize: 12, color: '#2E7D32', fontWeight: '600' }}>
-                    Account
-                  </Text>
-                </View>
-              </View>
-              <View style={{ 
-                height: 6, 
-                backgroundColor: '#E0E0E0', 
-                borderRadius: 3,
-                overflow: 'hidden'
-              }}>
-                <View style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  backgroundColor: '#5B5FEF' 
-                }} />
-              </View>
-            </View>
-          </View>
+              </Pressable>
+            </>
+          )}
         </View>
       </ScrollView>
-
+      
       {/* Bottom Navigation */}
       <View style={{ 
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
         flexDirection: 'row', 
         borderTopWidth: 1, 
         borderTopColor: '#EEE',

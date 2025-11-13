@@ -1,3 +1,4 @@
+// app/auth/login.tsx
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native';
@@ -77,10 +78,10 @@ export default function Login() {
         // Check if 2FA is enabled
         if (response.user.twoFactorEnabled) {
           // Navigate to 2FA verification
-          router.push('/auth/select-method');
+          router.replace('/auth/select-method');
         } else {
-          // Navigate to home
-          router.push('/home');
+          // Navigate to home (user is already saved in Zustand store)
+          router.replace('/home');
         }
       } catch (error: any) {
         Alert.alert('Error', error.message || 'Login failed');
@@ -223,7 +224,7 @@ export default function Login() {
         
         {/* Continue as Guest */}
         <Pressable 
-          onPress={() => router.push('/home')}
+          onPress={() => router.replace('/home')}
           disabled={loading}
           style={{ alignItems: 'center', paddingVertical: 8, opacity: loading ? 0.5 : 1 }}
         >

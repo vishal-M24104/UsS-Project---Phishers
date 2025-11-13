@@ -1,3 +1,4 @@
+// app/auth/signup.tsx
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
@@ -138,7 +139,6 @@ export default function SignUp() {
         console.log('Attempting signup with:', {
           name: name.trim(),
           email: email.trim().toLowerCase(),
-          // Don't log password in production!
         });
 
         const response = await authService.signUp({
@@ -153,13 +153,13 @@ export default function SignUp() {
         if (response && response.user) {
           Alert.alert(
             'Success',
-            'Account created successfully!',
+            'Account created successfully! Please login to continue.',
             [
               {
                 text: 'OK',
                 onPress: () => {
-                  // Navigate to select method or login
-                  router.replace('/auth/select-method');
+                  // Redirect to login page
+                  router.replace('/auth/login');
                 },
               },
             ]
