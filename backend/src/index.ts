@@ -45,7 +45,7 @@ app.use((err: Error, req: Request, res: Response, next: any) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(3000,"0.0.0.0", () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📍 Health check: http://localhost:${PORT}`);
   console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);

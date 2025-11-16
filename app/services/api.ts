@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../store/authStore';
 
 // Update this with your backend URL
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://192.168.33.185:3000/api';
 
 // For Android emulator use: http://10.0.2.2:3000/api
 // For iOS simulator use: http://localhost:3000/api
@@ -205,9 +205,17 @@ class AuthService extends ApiService {
     return response.data as User;
   }
 
-  async logout() {
-    // Clear from Zustand store
-    await useAuthStore.getState().logout();
+    async logout() {
+    try {
+      // Call backend to invalidate token
+      await this.post('/auth/logout', {});
+    } catch (error) {
+      // Even if backend call fails, we still logout locally
+      console.error('Backend logout failed:', error);
+    } finally {
+      // Always clear from Zustand store (which also clears AsyncStorage)
+      await useAuthStore.getState().logout();
+    }
   }
 }
 

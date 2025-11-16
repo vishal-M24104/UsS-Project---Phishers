@@ -75,6 +75,45 @@ export class AuthController {
       });
     }
   }
+  // Add this method to your existing authController class
+
+async logout(req: Request, res: Response): Promise<void> {
+  try {
+    // Get token from header
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (!token) {
+      res.status(400).json({
+        success: false,
+        message: 'No token provided'
+      });
+      return;
+    }
+
+    // TODO: Add token to blacklist in database
+    // Example with Prisma (adjust based on your setup):
+    // await prisma.tokenBlacklist.create({
+    //   data: {
+    //     token: token,
+    //     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    //   }
+    // });
+
+    // For now, just respond with success
+    // The client will handle clearing local storage
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error: any) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Logout failed',
+      error: error.message
+    });
+  }
+}
 }
 
 export const authController = new AuthController();

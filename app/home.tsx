@@ -2,6 +2,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BottomNav from '../app/components/BottomNav';
 import { useAuthStore } from '../app/store/authStore';
 
 export default function Home() {
@@ -214,6 +215,9 @@ export default function Home() {
           </Pressable>
         </View>
       </ScrollView>
+      
+      {/* Bottom Navigation */}
+      <BottomNav />
     </SafeAreaView>
   );
 }

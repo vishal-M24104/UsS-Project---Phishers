@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BottomNav from './components/BottomNav';
 
 export default function LearningModules() {
   const router = useRouter();
@@ -109,6 +110,7 @@ export default function LearningModules() {
           ))}
         </View>
       </ScrollView>
+      <BottomNav/>
     </SafeAreaView>
   );
 }

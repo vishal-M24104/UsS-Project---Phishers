@@ -1,44 +1,55 @@
 // app/(tabs)/profile.tsx
 import { useRouter } from 'expo-router';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// import { authService } from '../app/services/api';
-// import { useAuthStore } from '../app/store/authStore';
-// import { authService } from './services/api';
-// import { useAuthStore } from './store/authStore';
-import { useAuthStore } from './store/authStore';
-import { authService } from './services/api';
-
+import { authService } from '../app/services/api';
+import { useAuthStore } from '../app/store/authStore';
+import BottomNav from './components/BottomNav';
 
 export default function Profile() {
   const router = useRouter();
   const user = useAuthStore(s => s.user);
-const logout = useAuthStore(s => s.logout);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+
+  
   
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-              router.replace('/auth/login');
-            } catch (error) {
-              console.error('Logout error:', error);
-            }
+
+    //    const confirmed = window.confirm('Are you sure you want to logout?');
+  
+//   if (!confirmed) {
+//     console.log('🔵 Logout cancelled');
+//     return;
+//   }
+  Alert.alert(
+    'Logout',
+    'Are you sure you want to logout?',
+    [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setIsLoggingOut(true);
+            await authService.logout();
+            router.replace('/auth/login');
+          } catch (error) {
+            console.error('Logout error:', error);
+            Alert.alert('Error', 'Failed to logout');
+          } finally {
+            setIsLoggingOut(false);
           }
         }
-      ]
-    );
-  };
+      }
+    ]
+  );
+};
   
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -182,16 +193,22 @@ const logout = useAuthStore(s => s.logout);
               {/* Logout Button */}
               <Pressable 
                 onPress={handleLogout}
+                disabled={isLoggingOut}
                 style={{ 
-                  backgroundColor: '#FF6B6B',
+                  backgroundColor: isLoggingOut ? '#FF9B9B' : '#FF6B6B',
                   padding: 16,
                   borderRadius: 12,
                   alignItems: 'center',
-                  marginTop: 20
+                  marginTop: 20,
+                  flexDirection: 'row',
+                  justifyContent: 'center'
                 }}
               >
+                {isLoggingOut && (
+                  <ActivityIndicator color="white" size="small" style={{ marginRight: 8 }} />
+                )}
                 <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
-                  Logout
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
                 </Text>
               </Pressable>
             </>
@@ -248,7 +265,7 @@ const logout = useAuthStore(s => s.logout);
           )}
         </View>
       </ScrollView>
-
+      <BottomNav/>
     </SafeAreaView>
   );
 }
