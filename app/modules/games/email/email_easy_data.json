@@ -1,0 +1,88 @@
+[
+  {
+    "sender": "support.bankofindia@gmail.com",
+    "subject": "Your Account Will Be Blocked",
+    "body": "Dear customer, your account will be closed. Click here to update immediately.",
+    "isPhishing": true,
+    "explanation": "Banks never send emails from Gmail addresses."
+  },
+  {
+    "sender": "no-reply@amazon.in",
+    "subject": "Reward: ₹500 Amazon Gift Card",
+    "body": "Congratulations! You've won a gift card. Claim now.",
+    "isPhishing": true,
+    "explanation": "Amazon never gives random rewards without login verification."
+  },
+  {
+    "sender": "notifications@github.com",
+    "subject": "New Login to Your Account",
+    "body": "A new login was detected to your account. If this was you, ignore.",
+    "isPhishing": false,
+    "explanation": "This is a typical legitimate GitHub security email."
+  },
+  {
+    "sender": "security@icicibank.com",
+    "subject": "Important: Update your contact details",
+    "body": "Dear user, this is a security check. Please verify your contact.",
+    "isPhishing": false,
+    "explanation": "Comes from official icicibank.com domain."
+  },
+  {
+    "sender": "it-support@company.com",
+    "subject": "Password Expiring Soon",
+    "body": "Your password expires in 48 hours. Reset it from the company portal.",
+    "isPhishing": false,
+    "explanation": "Standard IT password rotation alert."
+  },
+
+  {
+    "sender": "paytm-security@paytm-support.in",
+    "subject": "Your Paytm Needs Verification",
+    "body": "Your Paytm KYC is incomplete. Click the link to update.",
+    "isPhishing": true,
+    "explanation": "Fake domain: paytm-support.in is not official."
+  },
+  {
+    "sender": "apple@secure-auth.com",
+    "subject": "Your Apple ID is Locked",
+    "body": "We locked your Apple ID due to suspicious login. Verify immediately.",
+    "isPhishing": true,
+    "explanation": "Apple never uses external domains like secure-auth.com."
+  },
+  {
+    "sender": "security@google.com",
+    "subject": "Suspicious Attempt Prevented",
+    "body": "Google blocked a suspicious attempt. Check your account activity.",
+    "isPhishing": false,
+    "explanation": "Standard Google security email."
+  },
+  {
+    "sender": "verify@flipkart-support.net",
+    "subject": "Your Order Has an Issue",
+    "body": "Your recent order is on hold. Click here to confirm.",
+    "isPhishing": true,
+    "explanation": "Fake domain flipkart-support.net."
+  },
+  {
+    "sender": "care@swiggy.com",
+    "subject": "Delivery Issue: Confirm Your Address",
+    "body": "We couldn’t verify your address. Update to continue delivery.",
+    "isPhishing": false,
+    "explanation": "Swiggy sometimes sends such official alerts."
+  },
+
+  {
+    "sender": "netflix@stream-secure.com",
+    "subject": "Payment Failed",
+    "body": "Your last payment failed. Update your card to keep watching.",
+    "isPhishing": true,
+    "explanation": "Fake Netflix domain."
+  },
+  {
+    "sender": "noreply@hdfcbank.com",
+    "subject": "Statement Available",
+    "body": "Your monthly statement is ready to download.",
+    "isPhishing": false,
+    "explanation": "Legitimate bank communication."
+  }
+]

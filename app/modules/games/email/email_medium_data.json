@@ -1,0 +1,58 @@
+[
+  {
+    "sender": "no-reply@amazon.in",
+    "subject": "Unusual Sign-In Attempt • Verify",
+    "body": "We detected a sign-in attempt from a new device. If this was not you, secure your account immediately.",
+    "isPhishing": false,
+    "explanation": "Legit security alert, uses correct domain and no suspicious links."
+  },
+  {
+    "sender": "payments-update@paytm-support.in",
+    "subject": "Your Refund is Ready",
+    "body": "A refund of ₹1,999 is waiting for you. Click the secure link to receive the money.",
+    "isPhishing": true,
+    "explanation": "Fake Paytm support domain, refund scam pattern."
+  },
+  {
+    "sender": "security@google.com",
+    "subject": "Did you just sign in?",
+    "body": "A new login was detected from Chrome Windows. Check activity if this wasn't you.",
+    "isPhishing": false,
+    "explanation": "Actual Google security emails look similar."
+  },
+  {
+    "sender": "admin@secure-flipkart.com",
+    "subject": "Payment Verification Required",
+    "body": "Your last order payment could not be verified. Please confirm your details to continue.",
+    "isPhishing": true,
+    "explanation": "Fake domain 'secure-flipkart.com', not owned by Flipkart."
+  },
+  {
+    "sender": "info@icicibank-online.com",
+    "subject": "KYC Document Re-Verification",
+    "body": "Your KYC has expired. Upload your PAN/Aadhaar within 24 hours to avoid service blockage.",
+    "isPhishing": true,
+    "explanation": "Banks never use alternate domains like icicibank-online.com."
+  },
+  {
+    "sender": "no-reply@github.com",
+    "subject": "New Device Logged In",
+    "body": "A login from India was detected. If this was you, ignore this email.",
+    "isPhishing": false,
+    "explanation": "Correct GitHub security format."
+  },
+  {
+    "sender": "support@zoho-mail.in",
+    "subject": "Mailbox Storage Almost Full",
+    "body": "Your mailbox is at 98%. Increase space to avoid message loss.",
+    "isPhishing": false,
+    "explanation": "Zoho sometimes sends storage alerts."
+  },
+  {
+    "sender": "pay-security@upi-safe.net",
+    "subject": "UPI Auto-Debit Failed",
+    "body": "Your UPI auto-debit has failed. Re-authenticate using the secure link.",
+    "isPhishing": true,
+    "explanation": "UPI does not send emails from random foreign-looking domains."
+  }
+]

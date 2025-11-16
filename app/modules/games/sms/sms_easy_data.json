@@ -1,0 +1,26 @@
+[
+  {
+    "sender": "VM-ICICIB",
+    "message": "Dear customer, your ICICI Bank account is temporarily blocked. Click http://icici-verify-support.com to update details.",
+    "isPhishing": true,
+    "explanation": "Banks never send verification links via SMS. The domain is fake."
+  },
+  {
+    "sender": "DM-AMAZON",
+    "message": "Your Amazon package cannot be delivered. Update address: https://amazon-delivery-help.net",
+    "isPhishing": true,
+    "explanation": "Fake Amazon domain, suspicious short link."
+  },
+  {
+    "sender": "VK-SWIGGY",
+    "message": "Your refund of ₹399 has been processed. No action needed.",
+    "isPhishing": false,
+    "explanation": "Genuine confirmation message, no link, no personal data request."
+  },
+  {
+    "sender": "AD-IRCTC",
+    "message": "Your ticket booking is confirmed. PNR: 4532992011.",
+    "isPhishing": false,
+    "explanation": "Standard IRCTC confirmation message."
+  }
+]

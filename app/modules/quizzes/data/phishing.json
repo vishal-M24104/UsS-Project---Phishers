@@ -1,0 +1,30 @@
+{
+  "title": "Spot the Phishing Email",
+  "instructions": "Identify phishing attempts by analyzing the sender, content, and urgency.",
+  "questions": [
+    {
+      "difficulty": "easy",
+      "points": 10,
+      "question": "Your bank asks you to verify your account by clicking a link.",
+      "options": ["Legitimate", "Phishing"],
+      "correctIndex": 1,
+      "hint": "Banks do not ask for information through links."
+    },
+    {
+      "difficulty": "easy",
+      "points": 10,
+      "question": "An email from HR asks for your ID card image to update records.",
+      "options": ["Legitimate", "Phishing"],
+      "correctIndex": 0,
+      "hint": "Check if sender's email domain is authentic."
+    },
+    {
+      "difficulty": "medium",
+      "points": 15,
+      "question": "You receive a message: 'Your package cannot be delivered. Update info here.'",
+      "options": ["Legitimate", "Phishing"],
+      "correctIndex": 1,
+      "hint": "Delivery scams are common."
+    }
+  ]
+}

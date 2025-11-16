@@ -70,10 +70,14 @@ export default function LearningModules() {
         }}>
           {modules.map((module) => (
             <Pressable 
-              key={module.id}
-              onPress={() => {
-                if (module.title === 'Games') router.push('/modules/games');
-            }}
+    key={module.id}
+    onPress={() => {
+      if (module.title === 'Games') {
+        router.push('/modules/games');
+      } else if (module.title === 'Quizzes') {
+        router.push('/modules/quizzes');   // <-- ADDED
+      }
+    }}
               style={{ 
                 width: '48%',
                 backgroundColor: module.color,
@@ -105,35 +109,6 @@ export default function LearningModules() {
           ))}
         </View>
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={{ 
-        flexDirection: 'row', 
-        borderTopWidth: 1, 
-        borderTopColor: '#EEE',
-        paddingVertical: 12,
-        paddingHorizontal: 40,
-        backgroundColor: 'white'
-      }}>
-        <Pressable 
-          onPress={() => router.push('/home')}
-          style={{ flex: 1, alignItems: 'center' }}
-        >
-          <Text style={{ fontSize: 24, marginBottom: 4 }}>🏠</Text>
-          <Text style={{ fontSize: 12, color: '#999' }}>Home</Text>
-        </Pressable>
-        <Pressable style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={{ fontSize: 24, marginBottom: 4 }}>📚</Text>
-          <Text style={{ fontSize: 12, color: '#5B5FEF', fontWeight: '600' }}>Modules</Text>
-        </Pressable>
-        <Pressable 
-          onPress={() => router.push('/profile')}
-          style={{ flex: 1, alignItems: 'center' }}
-        >
-          <Text style={{ fontSize: 24, marginBottom: 4 }}>👤</Text>
-          <Text style={{ fontSize: 12, color: '#999' }}>Profile</Text>
-        </Pressable>
-      </View>
     </SafeAreaView>
   );
 }

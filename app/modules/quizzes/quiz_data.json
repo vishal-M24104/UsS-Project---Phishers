@@ -1,0 +1,132 @@
+[
+  {
+    "difficulty": "easy",
+    "points": 10,
+    "question": "What is phishing?",
+    "options": [
+      "A way to catch real fish",
+      "A cyberattack to steal information",
+      "A type of mobile game",
+      "A computer update"
+    ],
+    "correctIndex": 1,
+    "hint": "It involves tricking users using fake messages."
+  },
+  {
+    "difficulty": "easy",
+    "points": 10,
+    "question": "Which is a safe password?",
+    "options": [
+      "123456",
+      "qwerty",
+      "A9#dK21@p",
+      "password"
+    ],
+    "correctIndex": 2,
+    "hint": "Strong passwords contain symbols, numbers & uppercase."
+  },
+  {
+    "difficulty": "easy",
+    "points": 10,
+    "question": "Which file is risky?",
+    "options": [
+      "report.pdf",
+      "image.png",
+      "invoice.exe",
+      "notes.txt"
+    ],
+    "correctIndex": 2,
+    "hint": "Executable files can run malicious code."
+  },
+  {
+    "difficulty": "easy",
+    "points": 10,
+    "question": "What should you check before clicking a link?",
+    "options": [
+      "Font size",
+      "Website color",
+      "URL correctness",
+      "Logo style"
+    ],
+    "correctIndex": 2,
+    "hint": "Always check the domain name."
+  },
+  {
+    "difficulty": "easy",
+    "points": 10,
+    "question": "Which is suspicious?",
+    "options": [
+      "bankofindia.com",
+      "secure-bank-login.co.in",
+      "google.com",
+      "microsoft.com"
+    ],
+    "correctIndex": 1,
+    "hint": "Fake websites add extra words to domain names."
+  },
+  {
+    "difficulty": "medium",
+    "points": 20,
+    "question": "You receive an email saying your account will be blocked. What should you do?",
+    "options": [
+      "Click link immediately",
+      "Reply with personal details",
+      "Ignore and visit official site manually",
+      "Forward to friends"
+    ],
+    "correctIndex": 2,
+    "hint": "Never click urgent threat links."
+  },
+  {
+    "difficulty": "medium",
+    "points": 20,
+    "question": "Which URL is safe?",
+    "options": [
+      "http://facebook.com-login.verification.net",
+      "https://facebook.com/security",
+      "http://secure-facebook.org",
+      "https://facebook-login-help.xyz"
+    ],
+    "correctIndex": 1,
+    "hint": "Check the **domain**, not the path."
+  },
+  {
+    "difficulty": "medium",
+    "points": 20,
+    "question": "What is two-factor authentication?",
+    "options": [
+      "A faster login",
+      "A login with 2 steps for security",
+      "A backup phone",
+      "A type of email"
+    ],
+    "correctIndex": 1,
+    "hint": "It uses an extra OTP or device."
+  },
+  {
+    "difficulty": "hard",
+    "points": 30,
+    "question": "Which indicates an advanced spear-phishing attempt?",
+    "options": [
+      "Generic greeting",
+      "Email with spelling mistakes",
+      "Highly personalized message with your details",
+      "Random advertisement"
+    ],
+    "correctIndex": 2,
+    "hint": "Hackers may use your real info."
+  },
+  {
+    "difficulty": "hard",
+    "points": 30,
+    "question": "A website looks identical to PayPal but the URL shows paypalsecure.verify-payments.com. What does this indicate?",
+    "options": [
+      "Trusted partner site",
+      "Beta testing server",
+      "Phishing using subdomains",
+      "Safe mirror site"
+    ],
+    "correctIndex": 2,
+    "hint": "Real sites NEVER place brand at the *left* of long subdomains."
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "sender": "AX-ADHAAR",
+    "message": "Your Aadhaar will be deactivated today. Update KYC immediately: http://aadhaar-verify.in",
+    "isPhishing": true,
+    "explanation": "UIDAI never sends such links. Fake domain + urgency scam."
+  },
+  {
+    "sender": "VK-SBIUPI",
+    "message": "Your SBI UPI will be blocked. Click to update PIN: https://sbi-upi-secure.net",
+    "isPhishing": true,
+    "explanation": "Banks never ask to update UPI PIN via SMS links."
+  },
+  {
+    "sender": "DM-FLIPKART",
+    "message": "Your Flipkart order #448291 is delayed. Track shipment here: https://fkrt-tracking.live",
+    "isPhishing": true,
+    "explanation": "Fake Flipkart domain with suspicious tracking link."
+  },
+  {
+    "sender": "AD-JIOFIBER",
+    "message": "Your monthly bill has been paid successfully. Thank you for using JioFiber.",
+    "isPhishing": false,
+    "explanation": "Standard bill confirmation message."
+  },
+  {
+    "sender": "VK-HDFCBK",
+    "message": "Your HDFC NetBanking login attempt failed. If not you, call 1800-266-4333.",
+    "isPhishing": false,
+    "explanation": "HDFC does send such alerts without links."
+  },
+  {
+    "sender": "AX-PAYTMUP",
+    "message": "Your Paytm KYC is incomplete. Click: http://paytm-kyc-update.info",
+    "isPhishing": true,
+    "explanation": "Fake domain. Paytm never uses '.info' or asks KYC via SMS link."
+  },
+  {
+    "sender": "DM-DHL",
+    "message": "Your customs fee is pending. Pay ₹75 to release shipment: https://dhl-clearance.org",
+    "isPhishing": true,
+    "explanation": "Fake courier payment scam with incorrect domain."
+  },
+  {
+    "sender": "AX-IRCTC",
+    "message": "Your ticket booking is waitlisted. PNR 4863291044.",
+    "isPhishing": false,
+    "explanation": "Valid IRCTC waitlist SMS format."
+  },
+  {
+    "sender": "VK-GPAY",
+    "message": "Your GPay has been reactivated. No action needed.",
+    "isPhishing": false,
+    "explanation": "Simple auto-notification."
+  },
+  {
+    "sender": "AX-AMZNIN",
+    "message": "You have won a FREE iPhone 15! Claim your reward: https://amazon-gifts.claim-now.cc",
+    "isPhishing": true,
+    "explanation": "Classic reward scam with fake Amazon domain."
+  }
+]

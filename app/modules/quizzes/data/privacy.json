@@ -1,0 +1,22 @@
+{
+  "title": "Data Privacy Maze",
+  "instructions": "Decide whether the data request is safe or suspicious.",
+  "questions": [
+    {
+      "difficulty": "easy",
+      "points": 10,
+      "question": "A quiz website asks for your birthday and home address.",
+      "options": ["Safe", "Suspicious"],
+      "correctIndex": 1,
+      "hint": "Sites should not require personal info for quizzes."
+    },
+    {
+      "difficulty": "medium",
+      "points": 15,
+      "question": "An app asks location only while in use.",
+      "options": ["Safe", "Suspicious"],
+      "correctIndex": 0,
+      "hint": "Minimal permissions = acceptable."
+    }
+  ]
+}

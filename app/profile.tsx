@@ -2,12 +2,18 @@
 import { useRouter } from 'expo-router';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { authService } from '../app/services/api';
-import { useAuthStore } from '../app/store/authStore';
+// import { authService } from '../app/services/api';
+// import { useAuthStore } from '../app/store/authStore';
+// import { authService } from './services/api';
+// import { useAuthStore } from './store/authStore';
+import { useAuthStore } from './store/authStore';
+import { authService } from './services/api';
+
 
 export default function Profile() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore(s => s.user);
+const logout = useAuthStore(s => s.logout);
   
   const handleLogout = () => {
     Alert.alert(
@@ -23,7 +29,7 @@ export default function Profile() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await authService.logout();
+              await logout();
               router.replace('/auth/login');
             } catch (error) {
               console.error('Logout error:', error);
@@ -242,35 +248,7 @@ export default function Profile() {
           )}
         </View>
       </ScrollView>
-      
-      {/* Bottom Navigation */}
-      <View style={{ 
-        flexDirection: 'row', 
-        borderTopWidth: 1, 
-        borderTopColor: '#EEE',
-        paddingVertical: 12,
-        paddingHorizontal: 40,
-        backgroundColor: 'white'
-      }}>
-        <Pressable 
-          onPress={() => router.push('/home')}
-          style={{ flex: 1, alignItems: 'center' }}
-        >
-          <Text style={{ fontSize: 24, marginBottom: 4 }}>🏠</Text>
-          <Text style={{ fontSize: 12, color: '#999' }}>Home</Text>
-        </Pressable>
-        <Pressable 
-          onPress={() => router.push('/modules')}
-          style={{ flex: 1, alignItems: 'center' }}
-        >
-          <Text style={{ fontSize: 24, marginBottom: 4 }}>📚</Text>
-          <Text style={{ fontSize: 12, color: '#999' }}>Modules</Text>
-        </Pressable>
-        <Pressable style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={{ fontSize: 24, marginBottom: 4 }}>👤</Text>
-          <Text style={{ fontSize: 12, color: '#5B5FEF', fontWeight: '600' }}>Profile</Text>
-        </Pressable>
-      </View>
+
     </SafeAreaView>
   );
 }

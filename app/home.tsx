@@ -214,35 +214,6 @@ export default function Home() {
           </Pressable>
         </View>
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={{ 
-        flexDirection: 'row', 
-        borderTopWidth: 1, 
-        borderTopColor: '#EEE',
-        paddingVertical: 12,
-        paddingHorizontal: 40,
-        backgroundColor: 'white'
-      }}>
-        <Pressable style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={{ fontSize: 24, marginBottom: 4 }}>🏠</Text>
-          <Text style={{ fontSize: 12, color: '#5B5FEF', fontWeight: '600' }}>Home</Text>
-        </Pressable>
-        <Pressable 
-          onPress={() => router.push('/modules')}
-          style={{ flex: 1, alignItems: 'center' }}
-        >
-          <Text style={{ fontSize: 24, marginBottom: 4 }}>📚</Text>
-          <Text style={{ fontSize: 12, color: '#999' }}>Modules</Text>
-        </Pressable>
-        <Pressable 
-          onPress={() => router.push('/profile')}
-          style={{ flex: 1, alignItems: 'center' }}
-        >
-          <Text style={{ fontSize: 24, marginBottom: 4 }}>👤</Text>
-          <Text style={{ fontSize: 12, color: '#999' }}>Profile</Text>
-        </Pressable>
-      </View>
     </SafeAreaView>
   );
 }

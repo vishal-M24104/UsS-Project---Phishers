@@ -1,0 +1,42 @@
+[
+  {
+    "senderName": "Google Account Security",
+    "senderEmail": "no-reply@accounts.google.com",
+    "time": "2:14 PM",
+    "subject": "Critical: Password Reset Requested",
+    "body": "A password reset was requested for your Google Account. If this wasn’t you, please review your activity. This request came from Chrome on Windows.",
+    "footer": "Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043",
+    "isPhishing": false,
+    "explanation": "This is a real format, correct domain, no suspicious links."
+  },
+  {
+    "senderName": "PayPal",
+    "senderEmail": "support@paypaI.com",
+    "time": "9:01 AM",
+    "subject": "Your Account Has Been Limited",
+    "body": "We detected unusual activity on your account and have temporarily limited access. Please click the secure verification link to restore access.",
+    "footer": "PayPal Holdings Inc.",
+    "isPhishing": true,
+    "explanation": "Domain contains capital 'I' instead of 'l' (paypaI.com). Classic spoofed domain attack."
+  },
+  {
+    "senderName": "Amazon Orders",
+    "senderEmail": "orders@amazon-india.support",
+    "time": "7:32 PM",
+    "subject": "Your Order Payment Failed – Re-authenticate",
+    "body": "Your recent order could not be processed. Please re-enter your payment details to avoid cancellation.",
+    "footer": "Amazon Services LLC",
+    "isPhishing": true,
+    "explanation": "Amazon never uses domain amazon-india.support."
+  },
+  {
+    "senderName": "Microsoft",
+    "senderEmail": "no-reply@microsoft.com",
+    "time": "11:50 AM",
+    "subject": "Unusual Login Activity Detected",
+    "body": "A login from MacOS Safari was detected. Review your sign-in history.",
+    "footer": "Microsoft Corporation",
+    "isPhishing": false,
+    "explanation": "Correct Microsoft security alert formatting."
+  }
+]

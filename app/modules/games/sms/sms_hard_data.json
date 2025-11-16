@@ -1,0 +1,52 @@
+[
+  {
+    "contact": "Bank Alert",
+    "avatar": "🏦",
+    "messages": [
+      { "from": "them", "text": "Your SBI account has suspicious activity." },
+      { "from": "them", "text": "Verify immediately: https://sbi-help-secure.net" }
+    ],
+    "isPhishing": true,
+    "explanation": "Fake domain + no bank sends links inside chat-style SMS."
+  },
+  {
+    "contact": "Airtel",
+    "avatar": "📶",
+    "messages": [
+      { "from": "them", "text": "Your Airtel SIM will be disabled in 24 hours." },
+      { "from": "them", "text": "Complete KYC: http://airtel-kyc-update.co" }
+    ],
+    "isPhishing": true,
+    "explanation": "Airtel never sends KYC links through SMS."
+  },
+  {
+    "contact": "BlueDart Courier",
+    "avatar": "📦",
+    "messages": [
+      { "from": "them", "text": "Your parcel is ready but address is incomplete." },
+      { "from": "them", "text": "Update address: https://bluedart-support.org" }
+    ],
+    "isPhishing": true,
+    "explanation": "Fake BlueDart domain requesting address update."
+  },
+  {
+    "contact": "IRCTC",
+    "avatar": "🚆",
+    "messages": [
+      { "from": "them", "text": "Your ticket is confirmed." },
+      { "from": "them", "text": "PNR: 4821923011" }
+    ],
+    "isPhishing": false,
+    "explanation": "Standard IRCTC ticket confirmation."
+  },
+  {
+    "contact": "Google",
+    "avatar": "🔐",
+    "messages": [
+      { "from": "them", "text": "Your Google account was accessed from Pune." },
+      { "from": "them", "text": "If this wasn't you, check your security alerts." }
+    ],
+    "isPhishing": false,
+    "explanation": "Realistic Google alert without links."
+  }
+]

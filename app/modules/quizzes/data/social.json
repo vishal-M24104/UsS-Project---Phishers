@@ -1,0 +1,22 @@
+{
+  "title": "Social Engineering Scramble",
+  "instructions": "Identify manipulation and deception tactics.",
+  "questions": [
+    {
+      "difficulty": "easy",
+      "points": 10,
+      "question": "A caller pretending to be your manager asks for urgent gift cards.",
+      "options": ["Legitimate", "Scam"],
+      "correctIndex": 1,
+      "hint": "Urgency + pressure = scam."
+    },
+    {
+      "difficulty": "medium",
+      "points": 15,
+      "question": "A friend texts from a new number asking for money.",
+      "options": ["Could be Real", "Scam"],
+      "correctIndex": 1,
+      "hint": "Always verify identity on call."
+    }
+  ]
+}
