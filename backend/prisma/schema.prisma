@@ -21,5 +21,21 @@ model User {
   twoFactorEnabled Boolean @default(false)
   twoFactorSecret  String?
 
+  // Relation to backup codes
+  backupCodes BackupCode[]
+
   @@map("users")
+}
+
+model BackupCode {
+  id        String    @id @default(uuid())
+  userId    String
+  code      String
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("backup_codes")
 }

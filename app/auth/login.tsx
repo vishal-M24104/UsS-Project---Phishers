@@ -1,189 +1,141 @@
-// app/auth/login.tsx
-import { useRouter } from 'expo-router';
+// app/auth/login.tsx - Updated with 2FA support
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '../services/api';
 
 export default function Login() {
   const router = useRouter();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  // Email validation
-  const validateEmail = (text: string) => {
-    setEmail(text);
-    setEmailError('');
-    
-    if (!text) {
-      return;
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(text)) {
-      setEmailError('Please enter a valid email address');
-    }
-  };
-  
-  // Password validation
-  const validatePassword = (text: string) => {
-    setPassword(text);
-    setPasswordError('');
-    
-    if (!text) {
-      return;
-    }
-    
-    if (text.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-    }
-  };
-  
-  const handleLogin = async () => {
-    let hasError = false;
-    
-    // Check if email is empty
-    if (!email) {
-      setEmailError('Email is required');
-      hasError = true;
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setEmailError('Please enter a valid email address');
-        hasError = true;
-      }
-    }
-    
-    // Check if password is empty
-    if (!password) {
-      setPasswordError('Password is required');
-      hasError = true;
-    } else if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-      hasError = true;
-    }
-    
-    // If no errors, proceed with API call
-    if (!hasError) {
-      setLoading(true);
-      try {
-        const response = await authService.login({
-          email: email.trim().toLowerCase(),
-          password,
-        });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-        // Check if 2FA is enabled
-        if (response.user.twoFactorEnabled) {
-          // Navigate to 2FA verification
-          router.replace('/auth/select-method');
-        } else {
-          // Navigate to home (user is already saved in Zustand store)
-          router.replace('/home');
-        }
-      } catch (error: any) {
-        Alert.alert('Error', error.message || 'Login failed');
-      } finally {
-        setLoading(false);
+  const handleLogin = async () => {
+    // Validation
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      setError('Please enter a valid email');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      console.log('🔐 Attempting login...');
+      const response = await authService.login({ email, password });
+      
+      // Check if 2FA is required
+      if (response.requiresTwoFactor && response.tempUserId) {
+        console.log('🔒 2FA required, navigating to verification...');
+        // Navigate to 2FA verification screen with userId
+        router.push({
+          pathname: '/auth/verify-2fa',
+          params: { userId: response.tempUserId }
+        });
+        return;
       }
+      
+      // Regular login success (no 2FA)
+      console.log('✅ Login successful');
+      router.replace('/home');
+      
+    } catch (error: any) {
+      console.error('❌ Login error:', error);
+      setError(error.message || 'Login failed');
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white', padding: 24 }}>
       <View style={{ flex: 1, justifyContent: 'center' }}>
-        {/* Logo */}
-        <View style={{ alignItems: 'center', marginBottom: 48 }}>
-          <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#5B5FEF' }}>
-            ✱ Phishers
+        {/* Header */}
+        <View style={{ marginBottom: 32 }}>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#333', marginBottom: 8 }}>
+            Welcome Back
           </Text>
-          <Text style={{ color: '#666', marginTop: 8 }}>
-            Catch the Phish. Stay Secure.
+          <Text style={{ color: '#666', fontSize: 16 }}>
+            Login to continue
           </Text>
         </View>
-        
+
+        {/* Error Message */}
+        {error ? (
+          <View style={{ 
+            backgroundColor: '#FEE2E2', 
+            padding: 12, 
+            borderRadius: 8, 
+            marginBottom: 16,
+            borderLeftWidth: 4,
+            borderLeftColor: '#EF5B5B'
+          }}>
+            <Text style={{ color: '#EF5B5B', fontSize: 14 }}>
+              {error}
+            </Text>
+          </View>
+        ) : null}
+
         {/* Email Input */}
         <View style={{ marginBottom: 16 }}>
-          <Text style={{ marginBottom: 8, color: '#333', fontWeight: '500' }}>
-            Email Address
+          <Text style={{ color: '#333', fontWeight: '500', marginBottom: 8 }}>
+            Email
           </Text>
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center',
-            borderWidth: 1, 
-            borderColor: emailError ? '#EF5B5B' : '#ddd', 
-            borderRadius: 8,
-            paddingHorizontal: 12,
-            backgroundColor: '#f9f9f9'
-          }}>
-            <Text style={{ marginRight: 8, color: '#999' }}>✉</Text>
-            <TextInput
-              value={email}
-              onChangeText={validateEmail}
-              placeholder="john.doe@example.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              editable={!loading}
-              style={{ 
-                flex: 1, 
-                paddingVertical: 14,
-                fontSize: 16,
-                color: '#333'
-              }}
-            />
-          </View>
-          {emailError ? (
-            <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>
-              {emailError}
-            </Text>
-          ) : null}
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter your email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            style={{
+              borderWidth: 1,
+              borderColor: '#E5E5E5',
+              borderRadius: 8,
+              padding: 16,
+              fontSize: 16,
+              backgroundColor: 'white'
+            }}
+          />
         </View>
-        
+
         {/* Password Input */}
         <View style={{ marginBottom: 24 }}>
-          <Text style={{ marginBottom: 8, color: '#333', fontWeight: '500' }}>
+          <Text style={{ color: '#333', fontWeight: '500', marginBottom: 8 }}>
             Password
           </Text>
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center',
-            borderWidth: 1, 
-            borderColor: passwordError ? '#EF5B5B' : '#ddd', 
-            borderRadius: 8,
-            paddingHorizontal: 12,
-            backgroundColor: '#f9f9f9'
-          }}>
-            <Text style={{ marginRight: 8, color: '#999' }}>🔒</Text>
-            <TextInput
-              value={password}
-              onChangeText={validatePassword}
-              placeholder="Enter your password"
-              secureTextEntry
-              editable={!loading}
-              style={{ 
-                flex: 1, 
-                paddingVertical: 14,
-                fontSize: 16,
-                color: '#333'
-              }}
-            />
-          </View>
-          {passwordError ? (
-            <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>
-              {passwordError}
-            </Text>
-          ) : null}
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Enter your password"
+            secureTextEntry
+            autoCapitalize="none"
+            style={{
+              borderWidth: 1,
+              borderColor: '#E5E5E5',
+              borderRadius: 8,
+              padding: 16,
+              fontSize: 16,
+              backgroundColor: 'white'
+            }}
+          />
         </View>
-        
+
         {/* Login Button */}
-        <Pressable 
+        <Pressable
           onPress={handleLogin}
-          disabled={loading}
-          style={{ 
-            backgroundColor: loading ? '#9999FF' : '#5B5FEF', 
-            padding: 16, 
+          disabled={isLoading}
+          style={{
+            backgroundColor: isLoading ? '#C5C7F0' : '#5B5FEF',
+            padding: 16,
             borderRadius: 8,
             marginBottom: 16,
             flexDirection: 'row',
@@ -191,47 +143,23 @@ export default function Login() {
             alignItems: 'center'
           }}
         >
-          {loading ? (
-            <ActivityIndicator color="white" style={{ marginRight: 8 }} />
-          ) : null}
-          <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600', fontSize: 16 }}>
-            {loading ? 'Logging in...' : 'Login'}
+          {isLoading && (
+            <ActivityIndicator color="white" size="small" style={{ marginRight: 8 }} />
+          )}
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+            {isLoading ? 'Logging in...' : 'Login'}
           </Text>
         </Pressable>
-        
-        {/* Sign Up Button */}
-        <Pressable 
-          onPress={() => router.push('/auth/signup')}
-          disabled={loading}
-          style={{ 
-            borderWidth: 2, 
-            borderColor: '#5B5FEF', 
-            padding: 16, 
-            borderRadius: 8,
-            marginBottom: 16,
-            opacity: loading ? 0.5 : 1
-          }}
-        >
-          <Text style={{ color: '#5B5FEF', textAlign: 'center', fontWeight: '600', fontSize: 16 }}>
-            Sign Up
-          </Text>
-        </Pressable>
-        
-        {/* Divider */}
-        <View style={{ alignItems: 'center', marginVertical: 8 }}>
-          <Text style={{ color: '#999' }}>or</Text>
+
+        {/* Sign Up Link */}
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: '#666' }}>Don't have an account? </Text>
+          <Link href="/auth/signup" asChild>
+            <Pressable>
+              <Text style={{ color: '#5B5FEF', fontWeight: '600' }}>Sign Up</Text>
+            </Pressable>
+          </Link>
         </View>
-        
-        {/* Continue as Guest */}
-        <Pressable 
-          onPress={() => router.replace('/home')}
-          disabled={loading}
-          style={{ alignItems: 'center', paddingVertical: 8, opacity: loading ? 0.5 : 1 }}
-        >
-          <Text style={{ color: '#666', fontWeight: '500' }}>
-            Continue as Guest
-          </Text>
-        </Pressable>
       </View>
     </SafeAreaView>
   );

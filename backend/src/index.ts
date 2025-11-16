@@ -2,6 +2,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Application, Request, Response } from 'express';
 import authRoutes from './routes/authRoutes';
+import twoFactorRoutes from './routes/twoFactorRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +27,7 @@ app.get('/', (req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/2fa', twoFactorRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
