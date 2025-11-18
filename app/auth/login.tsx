@@ -1,7 +1,7 @@
-// app/auth/login.tsx - Updated with 2FA support
+// app/auth/login.tsx - Fixed version
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '../services/api';
 
@@ -29,13 +29,23 @@ export default function Login() {
       setIsLoading(true);
       setError('');
       
-      console.log('🔐 Attempting login...');
-      const response = await authService.login({ email, password });
+      console.log('🔐 Starting login process...');
+      console.log('📧 Email:', email);
+      
+      const response = await authService.login({ 
+        email: email.trim().toLowerCase(), 
+        password 
+      });
+      
+      console.log('🔍 Login response received:', {
+        success: response.success,
+        requiresTwoFactor: response.requiresTwoFactor,
+        hasData: !!response.data
+      });
       
       // Check if 2FA is required
       if (response.requiresTwoFactor && response.tempUserId) {
         console.log('🔒 2FA required, navigating to verification...');
-        // Navigate to 2FA verification screen with userId
         router.push({
           pathname: '/auth/verify-2fa',
           params: { userId: response.tempUserId }
@@ -43,13 +53,41 @@ export default function Login() {
         return;
       }
       
-      // Regular login success (no 2FA)
-      console.log('✅ Login successful');
-      router.replace('/home');
+      // Check if login was successful
+      if (response.success && response.data) {
+        console.log('✅ Login successful, navigating to home...');
+        
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          router.replace('/home');
+        }, 100);
+      } else {
+        console.error('❌ Unexpected response structure');
+        throw new Error('Login failed - invalid response');
+      }
       
     } catch (error: any) {
       console.error('❌ Login error:', error);
-      setError(error.message || 'Login failed');
+      
+      let errorMessage = 'Login failed';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Handle specific error cases
+      if (errorMessage.includes('credentials')) {
+        errorMessage = 'Invalid email or password';
+      } else if (errorMessage.includes('Too many')) {
+        errorMessage = 'Too many login attempts. Please try again later.';
+      } else if (errorMessage.includes('Network') || errorMessage.includes('connect')) {
+        errorMessage = 'Cannot connect to server. Please check your connection.';
+      }
+      
+      setError(errorMessage);
+      
+      // Show alert for better visibility
+      Alert.alert('Login Error', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -91,18 +129,22 @@ export default function Login() {
           </Text>
           <TextInput
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setError(''); // Clear error when user types
+            }}
             placeholder="Enter your email"
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
+            editable={!isLoading}
             style={{
               borderWidth: 1,
-              borderColor: '#E5E5E5',
+              borderColor: error ? '#EF5B5B' : '#E5E5E5',
               borderRadius: 8,
               padding: 16,
               fontSize: 16,
-              backgroundColor: 'white'
+              backgroundColor: isLoading ? '#F5F5F5' : 'white'
             }}
           />
         </View>
@@ -114,17 +156,21 @@ export default function Login() {
           </Text>
           <TextInput
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError(''); // Clear error when user types
+            }}
             placeholder="Enter your password"
             secureTextEntry
             autoCapitalize="none"
+            editable={!isLoading}
             style={{
               borderWidth: 1,
-              borderColor: '#E5E5E5',
+              borderColor: error ? '#EF5B5B' : '#E5E5E5',
               borderRadius: 8,
               padding: 16,
               fontSize: 16,
-              backgroundColor: 'white'
+              backgroundColor: isLoading ? '#F5F5F5' : 'white'
             }}
           />
         </View>
@@ -140,7 +186,8 @@ export default function Login() {
             marginBottom: 16,
             flexDirection: 'row',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            opacity: isLoading ? 0.7 : 1
           }}
         >
           {isLoading && (
@@ -155,8 +202,13 @@ export default function Login() {
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: '#666' }}>Don't have an account? </Text>
           <Link href="/auth/signup" asChild>
-            <Pressable>
-              <Text style={{ color: '#5B5FEF', fontWeight: '600' }}>Sign Up</Text>
+            <Pressable disabled={isLoading}>
+              <Text style={{ 
+                color: isLoading ? '#999' : '#5B5FEF', 
+                fontWeight: '600' 
+              }}>
+                Sign Up
+              </Text>
             </Pressable>
           </Link>
         </View>

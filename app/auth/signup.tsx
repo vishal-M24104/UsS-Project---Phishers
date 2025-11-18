@@ -1,4 +1,4 @@
-// app/auth/signup.tsx
+// app/auth/signup.tsx - Updated to redirect to login after signup
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
@@ -18,68 +18,48 @@ export default function SignUp() {
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   
-  // Name validation
   const validateName = (text: string) => {
     setName(text);
     setNameError('');
-    
-    if (!text) {
-      return;
-    }
-    
-    if (text.trim().length < 2) {
+    if (text && text.trim().length < 2) {
       setNameError('Name must be at least 2 characters');
     }
   };
   
-  // Email validation
   const validateEmail = (text: string) => {
     setEmail(text);
     setEmailError('');
-    
-    if (!text) {
-      return;
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(text)) {
-      setEmailError('Please enter a valid email address');
+    if (text) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(text)) {
+        setEmailError('Please enter a valid email address');
+      }
     }
   };
   
-  // Password validation
   const validatePassword = (text: string) => {
     setPassword(text);
     setPasswordError('');
     
-    if (!text) {
-      return;
+    if (text) {
+      if (text.length < 8) {
+        setPasswordError('Password must be at least 8 characters');
+      } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(text)) {
+        setPasswordError('Password must contain uppercase and lowercase letters');
+      } else if (!/(?=.*\d)/.test(text)) {
+        setPasswordError('Password must contain at least one number');
+      }
     }
     
-    if (text.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(text)) {
-      setPasswordError('Password must contain uppercase and lowercase letters');
-    } else if (!/(?=.*\d)/.test(text)) {
-      setPasswordError('Password must contain at least one number');
-    }
-    
-    // Revalidate confirm password if it has a value
     if (confirmPassword) {
       validateConfirmPassword(confirmPassword);
     }
   };
   
-  // Confirm password validation
   const validateConfirmPassword = (text: string) => {
     setConfirmPassword(text);
     setConfirmPasswordError('');
-    
-    if (!text) {
-      return;
-    }
-    
-    if (text !== password) {
+    if (text && text !== password) {
       setConfirmPasswordError('Passwords do not match');
     }
   };
@@ -87,7 +67,6 @@ export default function SignUp() {
   const handleSignUp = async () => {
     let hasError = false;
     
-    // Validate name
     if (!name.trim()) {
       setNameError('Name is required');
       hasError = true;
@@ -96,7 +75,6 @@ export default function SignUp() {
       hasError = true;
     }
     
-    // Validate email
     if (!email) {
       setEmailError('Email is required');
       hasError = true;
@@ -108,7 +86,6 @@ export default function SignUp() {
       }
     }
     
-    // Validate password
     if (!password) {
       setPasswordError('Password is required');
       hasError = true;
@@ -123,7 +100,6 @@ export default function SignUp() {
       hasError = true;
     }
     
-    // Validate confirm password
     if (!confirmPassword) {
       setConfirmPasswordError('Please confirm your password');
       hasError = true;
@@ -132,14 +108,10 @@ export default function SignUp() {
       hasError = true;
     }
     
-    // If no errors, proceed with API call
     if (!hasError) {
       setLoading(true);
       try {
-        console.log('Attempting signup with:', {
-          name: name.trim(),
-          email: email.trim().toLowerCase(),
-        });
+        console.log('Attempting signup...');
 
         const response = await authService.signUp({
           name: name.trim(),
@@ -147,37 +119,30 @@ export default function SignUp() {
           password,
         });
 
-        console.log('Signup response:', response);
+        console.log('Signup successful:', response);
 
-        // Check if signup was successful
-        if (response && response.user) {
-          Alert.alert(
-            'Success',
-            'Account created successfully! Please login to continue.',
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  // Redirect to login page
-                  router.replace('/auth/login');
-                },
+        // Show success message and redirect to login
+        Alert.alert(
+          'Success! 🎉',
+          'Your account has been created successfully. Please login to continue.',
+          [
+            {
+              text: 'Go to Login',
+              onPress: () => {
+                router.replace('/auth/login');
               },
-            ]
-          );
-        } else {
-          throw new Error('Invalid response from server');
-        }
+            },
+          ]
+        );
       } catch (error: any) {
         console.error('Signup error:', error);
         
-        // More detailed error handling
         let errorMessage = 'Failed to create account';
         
         if (error.message) {
           errorMessage = error.message;
         }
         
-        // Check for specific error cases
         if (error.message?.toLowerCase().includes('email')) {
           setEmailError('This email is already registered');
         }

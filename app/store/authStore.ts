@@ -1,6 +1,6 @@
-// store/authStore.ts
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// app/store/authStore.ts
 import { create } from 'zustand';
+import { secureStorage } from '../services/secureStorage';
 
 interface User {
   id: string;
@@ -12,108 +12,168 @@ interface User {
 interface AuthState {
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   isLoading: boolean;
-  isInitialized: boolean;
+  isAuthenticated: boolean;
+  isInitialized: boolean;  // Added
   
   // Actions
-  setUser: (user: User | null) => void;
-  setToken: (token: string | null) => void;
-  login: (user: User, token: string) => Promise<void>;
+  setUser: (user: User) => void;
+  setToken: (token: string) => void;
+  setRefreshToken: (token: string) => void;
+  login: (user: User, accessToken: string, refreshToken: string) => Promise<void>;
   logout: () => Promise<void>;
-  initialize: () => Promise<void>;
-  updateUser: (user: Partial<User>) => void;
+  loadStoredAuth: () => Promise<void>;
+  initialize: () => Promise<void>;  // Added
+  updateTokens: (accessToken: string, refreshToken: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
-  isLoading: false,
-  isInitialized: false,
+  refreshToken: null,
+  isLoading: true,
+  isAuthenticated: false,
+  isInitialized: false,  // Added
 
-  setUser: (user) => {
-    console.log('📝 AuthStore: Setting user:', user?.email || 'null');
+  setUser: (user: User) => {
     set({ user });
   },
-  
-  setToken: (token) => {
-    console.log('🔑 AuthStore: Setting token:', token ? 'exists' : 'null');
+
+  setToken: (token: string) => {
     set({ token });
   },
 
-  login: async (user, token) => {
+  setRefreshToken: (token: string) => {
+    set({ refreshToken: token });
+  },
+
+  login: async (user: User, accessToken: string, refreshToken: string) => {
     try {
-      console.log('🔐 AuthStore: Logging in user:', user.email);
-      
-      // Save token to AsyncStorage
-      await AsyncStorage.setItem('authToken', token);
-      console.log('✅ AuthStore: Token saved to AsyncStorage');
-      
+      // Save to secure storage
+      await secureStorage.saveAccessToken(accessToken);
+      await secureStorage.saveRefreshToken(refreshToken);
+      await secureStorage.saveUserData(user);
+
       // Update state
-      set({ 
-        user, 
-        token,
-        isLoading: false 
+      set({
+        user,
+        token: accessToken,
+        refreshToken: refreshToken,
+        isAuthenticated: true,
+        isLoading: false
       });
-      console.log('✅ AuthStore: Login complete');
+
+      console.log('✅ Login state updated and tokens stored securely');
     } catch (error) {
-      console.error('❌ AuthStore: Error saving auth data:', error);
+      console.error('❌ Error during login:', error);
       throw error;
     }
   },
 
   logout: async () => {
     try {
-      console.log('🔴 AuthStore: Starting logout...');
-      
-      // Clear token from AsyncStorage
-      await AsyncStorage.removeItem('authToken');
-      console.log('✅ AuthStore: Token removed from AsyncStorage');
-      
+      // Clear secure storage
+      await secureStorage.clearAll();
+
       // Clear state
-      set({ 
-        user: null, 
+      set({
+        user: null,
         token: null,
-        isLoading: false 
+        refreshToken: null,
+        isAuthenticated: false,
+        isLoading: false
       });
-      console.log('✅ AuthStore: State cleared');
-      console.log('🏁 AuthStore: Logout complete');
+
+      console.log('✅ Logout successful, tokens cleared');
     } catch (error) {
-      console.error('❌ AuthStore: Error clearing auth data:', error);
-      throw error;
+      console.error('❌ Error during logout:', error);
     }
   },
 
+  loadStoredAuth: async () => {
+    try {
+      set({ isLoading: true });
+
+      // Load from secure storage
+      const [storedToken, storedRefreshToken, storedUser] = await Promise.all([
+        secureStorage.getAccessToken(),
+        secureStorage.getRefreshToken(),
+        secureStorage.getUserData()
+      ]);
+
+      if (storedToken && storedRefreshToken && storedUser) {
+        set({
+          token: storedToken,
+          refreshToken: storedRefreshToken,
+          user: storedUser,
+          isAuthenticated: true,
+          isLoading: false
+        });
+        console.log('✅ Auth state restored from secure storage');
+      } else {
+        set({ isLoading: false });
+        console.log('ℹ️ No stored auth found');
+      }
+    } catch (error) {
+      console.error('❌ Error loading stored auth:', error);
+      set({ isLoading: false });
+    }
+  },
+
+  // Initialize method - loads auth state and marks initialization complete
   initialize: async () => {
     try {
-      console.log('🚀 AuthStore: Initializing...');
-      set({ isLoading: true });
-      
-      // Try to get token from AsyncStorage
-      const token = await AsyncStorage.getItem('authToken');
-      console.log('🔍 AuthStore: Token from storage:', token ? 'exists' : 'null');
-      
-      if (token) {
-        // Token exists, set it in state
-        // The app will fetch user profile in _layout
-        set({ token });
-        console.log('✅ AuthStore: Token set in state');
+      console.log('🔄 Initializing auth store...');
+      set({ isLoading: true, isInitialized: false });
+
+      // Load from secure storage
+      const [storedToken, storedRefreshToken, storedUser] = await Promise.all([
+        secureStorage.getAccessToken(),
+        secureStorage.getRefreshToken(),
+        secureStorage.getUserData()
+      ]);
+
+      if (storedToken && storedRefreshToken && storedUser) {
+        set({
+          token: storedToken,
+          refreshToken: storedRefreshToken,
+          user: storedUser,
+          isAuthenticated: true,
+          isLoading: false,
+          isInitialized: true
+        });
+        console.log('✅ Auth state restored from secure storage');
       } else {
-        console.log('ℹ️ AuthStore: No token found');
+        set({ 
+          isLoading: false, 
+          isInitialized: true 
+        });
+        console.log('ℹ️ No stored auth found');
       }
-      
-      set({ isInitialized: true, isLoading: false });
-      console.log('✅ AuthStore: Initialization complete');
     } catch (error) {
-      console.error('❌ AuthStore: Error initializing auth:', error);
-      set({ isInitialized: true, isLoading: false });
+      console.error('❌ Error initializing auth:', error);
+      set({ 
+        isLoading: false, 
+        isInitialized: true 
+      });
     }
   },
 
-  updateUser: (userData) => {
-    const currentUser = get().user;
-    if (currentUser) {
-      console.log('📝 AuthStore: Updating user data');
-      set({ user: { ...currentUser, ...userData } });
+  updateTokens: async (accessToken: string, refreshToken: string) => {
+    try {
+      await secureStorage.saveAccessToken(accessToken);
+      await secureStorage.saveRefreshToken(refreshToken);
+      
+      set({
+        token: accessToken,
+        refreshToken: refreshToken
+      });
+
+      console.log('✅ Tokens updated successfully');
+    } catch (error) {
+      console.error('❌ Error updating tokens:', error);
+      throw error;
     }
-  },
+  }
 }));

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,17 +9,18 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
+  name      String // Now encrypted
+  email     String   @unique // Now encrypted (but unique constraint on encrypted value)
+  password  String // Already hashed
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   twoFactorEnabled Boolean @default(false)
-  twoFactorSecret  String?
+  twoFactorSecret  String? // Already encrypted
 
-  // Relation to backup codes
-  backupCodes BackupCode[]
+  // Relations
+  backupCodes   BackupCode[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
@@ -30,7 +28,7 @@ model User {
 model BackupCode {
   id        String    @id @default(uuid())
   userId    String
-  code      String
+  code      String // Already hashed
   used      Boolean   @default(false)
   usedAt    DateTime?
   createdAt DateTime  @default(now())
@@ -38,4 +36,16 @@ model BackupCode {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("backup_codes")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique // Hashed token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }

@@ -1,4 +1,4 @@
-// backend/src/controllers/authController.ts - Updated with complete2FA
+// backend/src/controllers/authController.ts
 import { Request, Response } from 'express';
 import { authService } from '../services/authService';
 import { validateLogin, validateSignUp } from '../utils/validation';
@@ -19,7 +19,7 @@ export class AuthController {
 
       return res.status(201).json({
         success: true,
-        message: 'User created successfully',
+        message: 'User created successfully. Please login to continue.',
         data: result
       });
     } catch (error: any) {
@@ -30,7 +30,7 @@ export class AuthController {
     }
   }
 
-  // Login - Updated to handle 2FA
+  // Login - Updated to handle 2FA and return refresh token
   async login(req: Request, res: Response): Promise<Response> {
     try {
       const { error, value } = validateLogin(req.body);
@@ -56,7 +56,11 @@ export class AuthController {
       return res.status(200).json({
         success: true,
         message: 'Login successful',
-        data: result
+        data: {
+          user: result.user,
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken
+        }
       });
     } catch (error: any) {
       return res.status(401).json({
@@ -66,7 +70,7 @@ export class AuthController {
     }
   }
 
-  // Complete 2FA login - NEW ENDPOINT
+  // Complete 2FA login
   async complete2FA(req: Request, res: Response): Promise<Response> {
     try {
       const { userId } = req.body;
@@ -83,12 +87,43 @@ export class AuthController {
       return res.status(200).json({
         success: true,
         message: 'Login successful',
-        data: result
+        data: {
+          user: result.user,
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken
+        }
       });
     } catch (error: any) {
       return res.status(400).json({
         success: false,
         message: error.message || 'Failed to complete login'
+      });
+    }
+  }
+
+  // Refresh access token
+  async refreshToken(req: Request, res: Response): Promise<Response> {
+    try {
+      const { refreshToken } = req.body;
+
+      if (!refreshToken) {
+        return res.status(400).json({
+          success: false,
+          message: 'Refresh token is required'
+        });
+      }
+
+      const result = await authService.refreshAccessToken(refreshToken);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Token refreshed successfully',
+        data: result
+      });
+    } catch (error: any) {
+      return res.status(401).json({
+        success: false,
+        message: error.message || 'Failed to refresh token'
       });
     }
   }
@@ -115,15 +150,10 @@ export class AuthController {
   // Logout
   async logout(req: Request, res: Response): Promise<void> {
     try {
-      const token = req.headers.authorization?.replace('Bearer ', '');
-      
-      if (!token) {
-        res.status(400).json({
-          success: false,
-          message: 'No token provided'
-        });
-        return;
-      }
+      const userId = (req as any).userId;
+      const { refreshToken } = req.body;
+
+      await authService.logout(userId, refreshToken);
 
       res.status(200).json({
         success: true,
