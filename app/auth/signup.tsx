@@ -12,6 +12,8 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -33,6 +35,13 @@ export default function SignUp() {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(text)) {
         setEmailError('Please enter a valid email address');
+      } else {
+        // Check for valid email providers
+        const validProviders = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'protonmail.com'];
+        const domain = text.toLowerCase().split('@')[1];
+        if (!validProviders.includes(domain)) {
+          setEmailError('Please use a valid email provider (Gmail, Yahoo, Outlook, etc.)');
+        }
       }
     }
   };
@@ -185,7 +194,7 @@ export default function SignUp() {
             <TextInput
               value={name}
               onChangeText={validateName}
-              placeholder="John Doe"
+              placeholder="Name"
               autoCapitalize="words"
               editable={!loading}
               style={{ 
@@ -221,7 +230,7 @@ export default function SignUp() {
             <TextInput
               value={email}
               onChangeText={validateEmail}
-              placeholder="john.doe@example.com"
+              placeholder="Email"
               keyboardType="email-address"
               autoCapitalize="none"
               editable={!loading}
@@ -258,8 +267,8 @@ export default function SignUp() {
             <TextInput
               value={password}
               onChangeText={validatePassword}
-              placeholder="Enter your password"
-              secureTextEntry
+              placeholder="Password"
+              secureTextEntry={!showPassword}
               editable={!loading}
               style={{ 
                 flex: 1, 
@@ -268,6 +277,11 @@ export default function SignUp() {
                 color: '#333'
               }}
             />
+            <Pressable onPress={() => setShowPassword(!showPassword)}>
+              <Text style={{ fontSize: 18, color: '#999' }}>
+                {showPassword ? '👁️' : '👁️‍🗨️'}
+              </Text>
+            </Pressable>
           </View>
           {passwordError ? (
             <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>
@@ -294,8 +308,8 @@ export default function SignUp() {
             <TextInput
               value={confirmPassword}
               onChangeText={validateConfirmPassword}
-              placeholder="Re-enter your password"
-              secureTextEntry
+              placeholder="Confirm Password"
+              secureTextEntry={!showConfirmPassword}
               editable={!loading}
               style={{ 
                 flex: 1, 
@@ -304,6 +318,11 @@ export default function SignUp() {
                 color: '#333'
               }}
             />
+            <Pressable onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+              <Text style={{ fontSize: 18, color: '#999' }}>
+                {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+              </Text>
+            </Pressable>
           </View>
           {confirmPasswordError ? (
             <Text style={{ color: '#EF5B5B', fontSize: 12, marginTop: 4 }}>

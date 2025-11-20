@@ -1,7 +1,7 @@
 // backend/src/utils/encryption.ts
 import crypto from 'crypto';
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '12345678901234567890123456789012'; // Must be 32 bytes
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '12345678901234567890123456789012'; // Must be 32 bytes (64 hex chars)
 const IV_LENGTH = 16; // AES block size
 
 /**
@@ -12,14 +12,14 @@ export function encryptDeterministic(text: string): string {
   try {
     // Create deterministic IV from the text itself using HMAC
     const iv = crypto
-      .createHmac('sha256', ENCRYPTION_KEY)
+      .createHmac('sha256', Buffer.from(ENCRYPTION_KEY, 'hex'))
       .update(text)
       .digest()
       .slice(0, IV_LENGTH);
     
     const cipher = crypto.createCipheriv(
       'aes-256-cbc',
-      Buffer.from(ENCRYPTION_KEY, 'utf-8'),
+      Buffer.from(ENCRYPTION_KEY, 'hex'),
       iv
     );
     
@@ -43,7 +43,7 @@ export function encrypt(text: string): string {
     const iv = crypto.randomBytes(IV_LENGTH);
     const cipher = crypto.createCipheriv(
       'aes-256-cbc',
-      Buffer.from(ENCRYPTION_KEY, 'utf-8'),
+      Buffer.from(ENCRYPTION_KEY, 'hex'),
       iv
     );
     
@@ -74,7 +74,7 @@ export function decrypt(encryptedText: string): string {
     
     const decipher = crypto.createDecipheriv(
       'aes-256-cbc',
-      Buffer.from(ENCRYPTION_KEY, 'utf-8'),
+      Buffer.from(ENCRYPTION_KEY, 'hex'),
       iv
     );
     
