@@ -1,60 +1,97 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+// app/modules/games/sms/medium.tsx
+import { fetchSMSGame } from "@/app/services/gameApi";
 import { router } from "expo-router";
-import smsData from "./sms_easy_data.json"; // <-- Replace later with sms_medium_data.json
+import React, { useEffect, useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import useExitWarning from "../../../hooks/useExitWarning";
 
 export default function SmsMediumGame() {
+  useExitWarning("/modules/games");
+
+  /** ---------------- ALL HOOKS MUST RUN FIRST ---------------- **/
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [index, setIndex] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
-  const [timer, setTimer] = useState(10); // ⏳ 10 seconds timer
+  const [timer, setTimer] = useState(10);
   const [timeUp, setTimeUp] = useState(false);
 
-  const question = smsData[index];
   const points = 50;
 
-  // TIMER LOGIC -------------------------------
+  /** ---------------- FETCH QUESTIONS ---------------- **/
   useEffect(() => {
-    if (showResult) return; // Stop timer once question answered
+    fetchSMSGame("medium").then((res) => {
+      setQuestions(res.questions || []);
+      setLoading(false);
+    });
+  }, []);
+
+  /** ---------------- TIMER LOGIC ---------------- **/
+  useEffect(() => {
+    if (loading) return;      // prevent hook mismatch
+    if (showResult) return;
 
     if (timer === 0) {
       setTimeUp(true);
+      setIsCorrect(false);
       setShowResult(true);
-      setIsCorrect(false); // Time up = wrong answer
       return;
     }
 
-    const countdown = setTimeout(() => setTimer(timer - 1), 1000);
-
+    const countdown = setTimeout(() => setTimer((t) => t - 1), 1000);
     return () => clearTimeout(countdown);
-  }, [timer, showResult]);
+  }, [timer, showResult, loading]);
 
+  /** ---------------- SAFE RENDER BLOCK ---------------- **/
+  if (loading) {
+    return (
+      <Text style={{ marginTop: 50, textAlign: "center" }}>
+        Loading...
+      </Text>
+    );
+  }
+
+  if (!questions.length) {
+    return (
+      <Text style={{ marginTop: 50, textAlign: "center" }}>
+        No questions found.
+      </Text>
+    );
+  }
+
+  /** ---------------- NOW SAFE TO READ QUESTION ---------------- **/
+  const question = questions[index];
+
+  /** ---------------- ANSWER HANDLER ---------------- **/
   const handleAnswer = (choice: boolean) => {
     if (showResult) return;
 
     const correct = choice === question.isPhishing;
-
     setIsCorrect(correct);
+
     if (correct) setScore((s) => s + points);
 
     setShowResult(true);
   };
 
+  /** ---------------- NEXT QUESTION ---------------- **/
   const nextQuestion = () => {
     setShowResult(false);
     setIsCorrect(null);
     setTimeUp(false);
-    setTimer(10); // Reset timer
+    setTimer(10);
 
-    if (index + 1 < smsData.length) {
+    if (index + 1 < questions.length) {
       setIndex(index + 1);
     } else {
       router.replace({
@@ -64,34 +101,30 @@ export default function SmsMediumGame() {
     }
   };
 
-  const progressPercent = ((index + 1) / smsData.length) * 100;
+  const progressPercent = ((index + 1) / questions.length) * 100;
 
+  /** ---------------- UI START ---------------- **/
   return (
     <ScrollView style={styles.container}>
-
-      {/* TOP BAR */}
+      
       <View style={styles.topRow}>
         <Text style={styles.topLeft}>
-          Question {index + 1}/{smsData.length}
+          Question {index + 1}/{questions.length}
         </Text>
         <Text style={styles.topRight}>Score: {score}</Text>
       </View>
 
-      {/* PROGRESS BAR */}
       <View style={styles.progressBackground}>
         <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
       </View>
 
-      {/* TITLE */}
       <Text style={styles.title}>SMS Phishing</Text>
       <Text style={styles.level}>Medium Level</Text>
 
-      {/* TIMER UI */}
       <View style={styles.timerBox}>
         <Text style={styles.timerText}>⏳ Time Left: {timer}s</Text>
       </View>
 
-      {/* SMS MESSAGE */}
       <View style={styles.smsCard}>
         <Text style={styles.sender}>{question.sender}</Text>
 
@@ -100,7 +133,6 @@ export default function SmsMediumGame() {
         </View>
       </View>
 
-      {/* ANSWERS */}
       {!showResult ? (
         <>
           <Pressable style={styles.btnRed} onPress={() => handleAnswer(true)}>
@@ -124,7 +156,11 @@ export default function SmsMediumGame() {
               { color: isCorrect ? "#1B5E20" : "#B71C1C" },
             ]}
           >
-            {timeUp ? "⏳ Time's Up!" : isCorrect ? "Correct! 🎉" : "Wrong ❌"}
+            {timeUp
+              ? "⏳ Time's Up!"
+              : isCorrect
+              ? "Correct! 🎉"
+              : "Wrong ❌"}
           </Text>
 
           <Text style={styles.explanation}>{question.explanation}</Text>
@@ -212,11 +248,7 @@ const styles = StyleSheet.create({
 
   resultBox: { padding: 20, borderRadius: 10, marginTop: 20 },
   resultTitle: { textAlign: "center", fontSize: 20, fontWeight: "700" },
-  explanation: {
-    marginVertical: 10,
-    textAlign: "center",
-    color: "#444",
-  },
+  explanation: { marginVertical: 10, textAlign: "center", color: "#444" },
 
   nextBtn: {
     backgroundColor: "#5B5FEF",

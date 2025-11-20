@@ -1,22 +1,14 @@
+// app/modules/quizzes/QuizStart.tsx
+import { fetchQuiz } from "@/app/services/gameApi";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
-
-/* 🔥 STATIC JSON IMPORTS (Required by Metro Bundler) */
-import phishing from "./data/phishing.json";
-import password from "./data/password.json";
-import privacy from "./data/privacy.json";
-import social from "./data/social.json";
-
-const quizMap: any = {
-  phishing,
-  password,
-  privacy,
-  social,
-};
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import useExitWarning from "../../hooks/useExitWarning";
 
 export default function QuizStart() {
-  const { topic } = useLocalSearchParams();
+  useExitWarning("/modules/quizzes");
+
+  const { topic } = useLocalSearchParams(); // phishing | password | privacy | social
   const [data, setData] = useState<any>(null);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -25,13 +17,14 @@ export default function QuizStart() {
   const [showHint, setShowHint] = useState(false);
   const [timer, setTimer] = useState(10);
 
-  /* ✔ Load quiz data */
+  // 🔥 LOAD QUIZ FROM BACKEND
   useEffect(() => {
-    const selected = quizMap[topic];
-    setData(selected || null);
+    fetchQuiz(topic as string).then((res) => {
+      setData(res.quiz);
+    });
   }, [topic]);
 
-  /* ✔ Timer logic */
+  // TIMER
   useEffect(() => {
     if (!data || showResult) return;
 
@@ -40,14 +33,14 @@ export default function QuizStart() {
       return;
     }
 
-    const t = setTimeout(() => setTimer(t => t - 1), 1000);
+    const t = setTimeout(() => setTimer((t) => t - 1), 1000);
     return () => clearTimeout(t);
   }, [timer, showResult, data]);
 
   if (!data) {
     return (
       <View style={{ padding: 40 }}>
-        <Text style={{ fontSize: 20 }}>Loading...</Text>
+        <Text style={{ fontSize: 20 }}>Loading quiz...</Text>
       </View>
     );
   }
@@ -60,7 +53,7 @@ export default function QuizStart() {
     setSelected(i);
 
     if (i === question.correctIndex) {
-      setScore(s => s + question.points);
+      setScore((s) => s + question.points);
     }
 
     setShowResult(true);
@@ -88,7 +81,13 @@ export default function QuizStart() {
     <ScrollView style={{ padding: 20 }}>
       <Text style={styles.header}>{data.title}</Text>
       <Text style={styles.sub}>{data.instructions}</Text>
-
+      {/* NEW UI */}
+<View style={styles.topBar}>
+  <Text style={styles.qsText}>
+    Question {index + 1}/{data.questions.length}
+  </Text>
+  <Text style={styles.qsText}>Score: {score}</Text>
+</View>
       <View style={styles.progressBG}>
         <View style={[styles.progressFG, { width: `${progressPercent}%` }]} />
       </View>
@@ -118,8 +117,8 @@ export default function QuizStart() {
             showResult && idx === question.correctIndex
               ? styles.correct
               : showResult && selected === idx
-                ? styles.wrong
-                : {},
+              ? styles.wrong
+              : {},
           ]}
         >
           <Text>{opt}</Text>
@@ -204,4 +203,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+  topBar: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 10,
+  paddingHorizontal: 4
+},
+
+qsText: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#5B5FEF"
+},
+
 });

@@ -21,7 +21,7 @@ model User {
   // Relations
   backupCodes   BackupCode[]
   refreshTokens RefreshToken[]
-
+  gameScores    GameScore[]
   @@map("users")
 }
 
@@ -49,3 +49,119 @@ model RefreshToken {
 
   @@map("refresh_tokens")
 }
+
+//
+// ────────────────────────────────────────────
+// EMAIL GAME MODELS
+// ────────────────────────────────────────────
+//
+
+// Email EASY JSON:
+//
+// { sender, subject, body, isPhishing, explanation }
+//
+model GameEmailEasy {
+  id          String   @id @default(uuid())
+  sender      String
+  subject     String
+  body        String
+  isPhishing  Boolean
+  explanation String
+}
+
+// Email MEDIUM JSON:
+//
+// { sender, subject, body, isPhishing, explanation }
+//
+model GameEmailMedium {
+  id          String   @id @default(uuid())
+  sender      String
+  subject     String
+  body        String
+  isPhishing  Boolean
+  explanation String
+}
+
+// Email HARD JSON:
+//
+// { senderName, senderEmail, time, subject, body, footer, isPhishing, explanation }
+//
+model GameEmailHard {
+  id           String   @id @default(uuid())
+  senderName   String
+  senderEmail  String
+  time         String
+  subject      String
+  body         String
+  footer       String
+  isPhishing   Boolean
+  explanation  String
+}
+
+//
+// ────────────────────────────────────────────
+// SMS GAME MODELS
+// ────────────────────────────────────────────
+//
+
+model GameSMSEasy {
+  id          String   @id @default(uuid())
+  sender      String
+  message     String
+  isPhishing  Boolean
+  explanation String?
+}
+
+
+model GameSMSMedium {
+  id          String   @id @default(uuid())
+  sender      String
+  message     String
+  isPhishing  Boolean
+  explanation String?
+}
+
+
+model GameSMSHard {
+  id          String   @id @default(uuid())
+  contact     String
+  avatar      String
+  messages    Json     // <-- array of messages
+  isPhishing  Boolean
+  explanation String?
+}
+
+
+
+//
+// ────────────────────────────────────────────
+// QUIZ MODELS (password, phishing, privacy, social)
+// ────────────────────────────────────────────
+//
+// JSON:
+// { title, instructions, questions: [] }
+//
+model Quiz {
+  id           String @id @default(uuid())
+  topic        String @unique
+  title        String
+  instructions String
+  questions    Json
+}
+
+model GameScore {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // "email" | "sms" | "quiz"
+  level     String   // "easy" | "medium" | "hard"
+  score     Int
+  updatedAt DateTime @updatedAt
+
+  // 🔥 Relation to User
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 🔥 Prevent duplicate score rows
+  @@unique([userId, type, level])
+}
+
+

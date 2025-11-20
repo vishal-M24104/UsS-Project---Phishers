@@ -1,40 +1,71 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+// app/modules/games/sms/hard.tsx
+import { fetchSMSGame } from "@/app/services/gameApi";
 import { router } from "expo-router";
-import smsData from "./sms_hard_data.json";
+import React, { useEffect, useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import useExitWarning from "../../../hooks/useExitWarning";
 
 export default function SmsHardGame() {
+  useExitWarning("/modules/games");
+
+  /** -------------------- ALL HOOKS FIRST -------------------- **/
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [index, setIndex] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
-  const [typing, setTyping] = useState(true); // typing bubble effect
+  const [typing, setTyping] = useState(true);
 
-  const question = smsData[index];
   const points = 50;
 
-  // TYPING EFFECT ----------------------------
+  /** -------------------- FETCH QUESTIONS -------------------- **/
   useEffect(() => {
+    fetchSMSGame("hard").then((res) => {
+      setQuestions(res.questions || []);
+      setLoading(false);
+    });
+  }, []);
+
+  /** -------------------- TYPING EFFECT -------------------- **/
+  useEffect(() => {
+    if (loading) return; // avoid mismatch
     const t = setTimeout(() => setTyping(false), 1000);
     return () => clearTimeout(t);
-  }, [index]);
+  }, [index, loading]);
 
+  /** -------------------- SAFE RETURNS -------------------- **/
+  if (loading) {
+    return <Text style={{ marginTop: 40, textAlign: "center" }}>Loading...</Text>;
+  }
+
+  if (!questions.length) {
+    return <Text style={{ marginTop: 40, textAlign: "center" }}>No SMS found.</Text>;
+  }
+
+  /** -------------------- NOW SAFE TO READ QUESTION -------------------- **/
+  const question = questions[index];
+
+  /** -------------------- ANSWER HANDLER -------------------- **/
   const handleAnswer = (choice: boolean) => {
     const correct = choice === question.isPhishing;
     if (correct) setScore((s) => s + points);
+
     setShowResult(true);
   };
 
+  /** -------------------- NEXT QUESTION -------------------- **/
   const nextQuestion = () => {
     setShowResult(false);
     setTyping(true);
 
-    if (index + 1 < smsData.length) {
+    if (index + 1 < questions.length) {
       setIndex(index + 1);
     } else {
       router.replace({
@@ -44,12 +75,13 @@ export default function SmsHardGame() {
     }
   };
 
-  const progressPercent = ((index + 1) / smsData.length) * 100;
+  const progressPercent = ((index + 1) / questions.length) * 100;
 
+  /** -------------------- UI START -------------------- **/
   return (
     <ScrollView style={styles.container}>
-      
-      {/* HEADER LIKE CHAT APP */}
+
+      {/* HEADER LIKE CHAT */} 
       <View style={styles.header}>
         <Text style={styles.avatar}>{question.avatar}</Text>
         <Text style={styles.contact}>{question.contact}</Text>
@@ -58,7 +90,7 @@ export default function SmsHardGame() {
       {/* TOP STATS */}
       <View style={styles.statsRow}>
         <Text style={styles.statsLeft}>
-          Question {index + 1}/{smsData.length}
+          Question {index + 1}/{questions.length}
         </Text>
         <Text style={styles.statsRight}>Score: {score}</Text>
       </View>
@@ -68,9 +100,9 @@ export default function SmsHardGame() {
         <View style={[styles.progressFG, { width: `${progressPercent}%` }]} />
       </View>
 
-      {/* CHAT BUBBLES */}
+      {/* CHAT UI */}
       <View style={styles.chatArea}>
-        {question.messages.map((msg, i) => (
+        {question.messages?.map((msg: any, i: number) => (
           <View
             key={i}
             style={[
@@ -89,7 +121,7 @@ export default function SmsHardGame() {
         )}
       </View>
 
-      {/* BUTTONS */}
+      {/* RESULT OR BUTTONS */}
       {!showResult ? (
         <>
           <Pressable style={styles.btnRed} onPress={() => handleAnswer(true)}>
@@ -104,9 +136,7 @@ export default function SmsHardGame() {
         <View
           style={[
             styles.resultBox,
-            {
-              backgroundColor: question.isPhishing ? "#FFF1F0" : "#E9F7EF",
-            },
+            { backgroundColor: question.isPhishing ? "#FFF1F0" : "#E9F7EF" },
           ]}
         >
           <Text style={styles.resultTitle}>
@@ -124,6 +154,7 @@ export default function SmsHardGame() {
   );
 }
 
+/* ---------------------- STYLES ---------------------- */
 const styles = StyleSheet.create({
   container: { backgroundColor: "#F2F4F5", padding: 20 },
 

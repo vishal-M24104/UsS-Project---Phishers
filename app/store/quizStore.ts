@@ -1,41 +1,48 @@
+// app/store/quizStore.ts
+import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface QuizProgressState {
+interface State {
+  scores: Record<string, number>; // phishing: 300, password: 500 etc
   completed: Record<string, boolean>;
   points: number;
-
   loadProgress: () => Promise<void>;
-  markCompleted: (topic: string, points: number) => Promise<void>;
-  resetTopic: (topic: string) => Promise<void>;
+  markCompleted: (topic: string, score: number) => Promise<void>;
 }
 
-export const useQuizStore = create<QuizProgressState>((set, get) => ({
+export const useQuizStore = create<State>((set, get) => ({
+  scores: {},
   completed: {},
   points: 0,
 
   loadProgress: async () => {
-    const saved = await AsyncStorage.getItem("quizProgress");
-    if (saved) set(JSON.parse(saved));
+    const raw = await SecureStore.getItemAsync("quiz_progress");
+    if (raw) {
+      const data = JSON.parse(raw);
+      set(data);
+    }
   },
 
-  markCompleted: async (topic, earnedPoints) => {
-    const current = get();
-    const updated = {
-      completed: { ...current.completed, [topic]: true },
-      points: current.points + earnedPoints,
-    };
-    await AsyncStorage.setItem("quizProgress", JSON.stringify(updated));
-    set(updated);
-  },
+  markCompleted: async (topic, score) => {
+    const maxPoints = 500; // 10 questions * 50
 
-  resetTopic: async (topic) => {
-    const current = get();
+    const currentScore = get().scores[topic] || 0;
+    const bestScore = Math.min(maxPoints, Math.max(currentScore, score));
+
     const updated = {
-      ...current,
-      completed: { ...current.completed, [topic]: false }
+      scores: { ...get().scores, [topic]: bestScore },
+      completed: { ...get().completed, [topic]: true },
+      points: Object.values({ ...get().scores, [topic]: bestScore }).reduce(
+        (a, b) => a + b,
+        0
+      ),
     };
-    await AsyncStorage.setItem("quizProgress", JSON.stringify(updated));
+
+    await SecureStore.setItemAsync(
+      "quiz_progress",
+      JSON.stringify(updated)
+    );
+
     set(updated);
   },
 }));

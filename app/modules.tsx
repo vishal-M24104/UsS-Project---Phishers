@@ -14,20 +14,20 @@ export default function LearningModules() {
       description: 'Engaging activities to make learning',
       color: '#E3F2FD'
     },
-    {
-      id: 2,
-      icon: '📹',
-      title: 'Video Lectures',
-      description: 'Comprehensive lessons and expert',
-      color: '#F3E5F5'
-    },
-    {
-      id: 3,
-      icon: '🧪',
-      title: 'Experiments',
-      description: 'Hands-on practical tasks to apply',
-      color: '#E8F5E9'
-    },
+    // {
+    //   id: 2,
+    //   icon: '📹',
+    //   title: 'Video Lectures',
+    //   description: 'Comprehensive lessons and expert',
+    //   color: '#F3E5F5'
+    // },
+    // {
+    //   id: 3,
+    //   icon: '🧪',
+    //   title: 'Experiments',
+    //   description: 'Hands-on practical tasks to apply',
+    //   color: '#E8F5E9'
+    // },
     {
       id: 4,
       icon: '❓',

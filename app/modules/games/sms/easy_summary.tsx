@@ -1,13 +1,36 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { postGameScore } from "@/app/services/scoreApi"; // ⭐ ADD THIS
+import { router, useLocalSearchParams } from "expo-router";
+import React from "react";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function SmsEasySummary() {
   const { score } = useLocalSearchParams();
+  const numericScore = Number(score) || 0;
+
+  // ⭐ SAVE SCORE ON LOAD
+  const saveScore = async () => {
+    try {
+      const res = await postGameScore({
+        type: "sms",     // ⭐ IMPORTANT
+        level: "easy",   // ⭐ SMS Easy Level
+        score: numericScore,
+      });
+
+      console.log("SMS Easy score saved:", res);
+    } catch (err) {
+      console.log("Score save failed", err);
+      Alert.alert("Error", "Failed to save SMS score.");
+    }
+  };
+
+  React.useEffect(() => {
+    saveScore();
+  }, []);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Easy Level Complete 🎉</Text>
-      <Text style={styles.score}>Your Score: {score}</Text>
+      <Text style={styles.score}>Your Score: {numericScore}</Text>
 
       <Pressable
         style={styles.btn}

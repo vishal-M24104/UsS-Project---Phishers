@@ -1,15 +1,52 @@
-import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
-import { router } from "expo-router";
-import { useEffect } from "react";
+// app/modules/quizzes/QuizIndex.tsx
+
+import { getLeaderboard } from "@/app/services/scoreApi";
+import { useAuthStore } from "@/app/store/authStore";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { BackHandler, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useQuizStore } from "../../store/quizStore";
 
 export default function QuizIndex() {
   const { completed, points, loadProgress } = useQuizStore();
+  const user = useAuthStore((s) => s.user);
+  const [topPlayers, setTopPlayers] = useState<any[]>([]);
+  const [userRank, setUserRank] = useState<number | null>(null);
 
-  // Load saved progress
+  // Load user quiz progress
   useEffect(() => {
     loadProgress();
   }, []);
+
+  // Load leaderboard preview
+  useEffect(() => {
+    (async () => {
+      const res = await getLeaderboard();
+      if (res.success) {
+        const list = res.leaderboard;
+
+        // Save top 2 for preview
+        setTopPlayers(list.slice(0, 2));
+
+        // find user rank
+        const index = list.findIndex((u) => u.id === user?.id);
+        setUserRank(index >= 0 ? index + 1 : null);
+      }
+    })();
+  }, []);
+
+  // BACK BUTTON — go to /modules
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        router.replace("/modules");
+        return true;
+      };
+
+      const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+      return () => subscription.remove();
+    }, [])
+  );
 
   const topics = [
     { id: "phishing", title: "Phishing Detection", icon: "🎣" },
@@ -24,12 +61,13 @@ export default function QuizIndex() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Title */}
+
+      {/* Page Title */}
       <Text style={styles.title}>📘 Quiz Hub</Text>
 
-      {/* Score Box */}
+      {/* Total Points Box */}
       <View style={styles.scoreBox}>
-        <Text style={styles.scoreLabel}>Your Points</Text>
+        <Text style={styles.scoreLabel}>Your Total Quiz Points</Text>
         <Text style={styles.scoreValue}>{points}</Text>
       </View>
 
@@ -39,7 +77,7 @@ export default function QuizIndex() {
         <View style={[styles.progressFG, { width: `${progressPercent}%` }]} />
       </View>
 
-      {/* Quiz List */}
+      {/* Quiz Topic Cards */}
       {topics.map((topic) => (
         <View key={topic.id} style={styles.card}>
           <Text style={styles.icon}>{topic.icon}</Text>
@@ -56,9 +94,7 @@ export default function QuizIndex() {
 
           <Pressable
             style={styles.btn}
-            onPress={() =>
-              router.push(`/modules/quizzes/start?topic=${topic.id}`)
-            }
+            onPress={() => router.push(`/modules/quizzes/start?topic=${topic.id}`)}
           >
             <Text style={styles.btnText}>
               {completed[topic.id] ? "Replay" : "Start"}
@@ -67,19 +103,38 @@ export default function QuizIndex() {
         </View>
       ))}
 
-      {/* Leaderboard Placeholder */}
+      {/* Dynamic Leaderboard Preview */}
       <View style={styles.leaderboardBox}>
-        <Text style={styles.leaderHeader}>🏆 Leaderboard (Static Preview)</Text>
-        <Text style={styles.leaderItem}>#1 You — {points} pts</Text>
-        <Text style={styles.leaderItem}>#2 Alice — 120 pts</Text>
-        <Text style={styles.leaderItem}>#3 Bob — 100 pts</Text>
+        <Text style={styles.leaderHeader}>🏆 Leaderboard Preview</Text>
+
+        {/* User Rank */}
+        <Text style={styles.youRank}>
+          Your Rank: {userRank ?? "Not Ranked"}
+        </Text>
+
+        {/* Top Players */}
+        {topPlayers.map((p, i) => (
+          <Text key={p.id} style={styles.leaderItem}>
+            #{i + 1} {p.name} — {p.total} pts
+          </Text>
+        ))}
+
+        {/* Button to full leaderboard */}
+        <Pressable
+          onPress={() => router.push("/leaderboard")}
+          style={styles.viewFullBtn}
+        >
+          <Text style={styles.viewFullText}>View Full Leaderboard →</Text>
+        </Pressable>
       </View>
+
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { padding: 20, backgroundColor: "white" },
+
   title: {
     fontSize: 26,
     fontWeight: "bold",
@@ -95,9 +150,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   scoreLabel: { fontSize: 16, color: "#555" },
-  scoreValue: { fontSize: 28, fontWeight: "bold", color: "#5B5FEF" },
+  scoreValue: { fontSize: 30, fontWeight: "bold", color: "#5B5FEF" },
 
   progressText: { marginBottom: 6, fontWeight: "600" },
+
   progressBG: {
     height: 8,
     backgroundColor: "#e5e7eb",
@@ -129,10 +185,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 10,
   },
-  btnText: {
-    color: "white",
-    fontWeight: "700",
-  },
+  btnText: { color: "white", fontWeight: "700" },
 
   leaderboardBox: {
     marginTop: 25,
@@ -141,5 +194,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   leaderHeader: { fontWeight: "700", fontSize: 18, marginBottom: 10 },
+  youRank: { fontWeight: "600", marginBottom: 8 },
   leaderItem: { fontSize: 14, marginBottom: 4 },
+
+  viewFullBtn: {
+    marginTop: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#5B5FEF",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  viewFullText: {
+    color: "#5B5FEF",
+    fontWeight: "700",
+  },
 });

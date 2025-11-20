@@ -2,7 +2,9 @@
 import { useAuthStore } from '../store/authStore';
 import { secureStorage } from './secureStorage';
 
-const API_BASE_URL = 'http://192.168.33.185:3000/api';
+
+// Update this with your backend URL
+const API_BASE_URL = 'http://192.168.41.233:3000/api';
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -39,26 +41,34 @@ class ApiService {
   }
 
   private async getAuthToken(): Promise<string | null> {
-    try {
-      const token = useAuthStore.getState().token;
-      if (token) return token;
-      return await secureStorage.getAccessToken();
-    } catch (error) {
-      console.error('Error getting auth token:', error);
-      return null;
-    }
+  try {
+    // First try Zustand store (works on native)
+    const token = useAuthStore.getState().token;
+    if (token) return token;
+
+    // DO NOT USE localStorage ON MOBILE
+    // Only use secure storage
+    return await secureStorage.getAccessToken();
+  } catch (error) {
+    console.error("Error getting auth token:", error);
+    return null;
   }
+}
+
+
 
   private async getRefreshToken(): Promise<string | null> {
-    try {
-      const token = useAuthStore.getState().refreshToken;
-      if (token) return token;
-      return await secureStorage.getRefreshToken();
-    } catch (error) {
-      console.error('Error getting refresh token:', error);
-      return null;
-    }
+  try {
+    const token = useAuthStore.getState().refreshToken;
+    if (token) return token;
+
+    return await secureStorage.getRefreshToken();
+  } catch (error) {
+    console.error("Error getting refresh token:", error);
+    return null;
   }
+}
+
 
   private async refreshAccessToken(): Promise<string | null> {
     const refreshToken = await this.getRefreshToken();

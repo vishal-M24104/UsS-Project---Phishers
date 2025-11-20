@@ -1,14 +1,37 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { postGameScore } from "@/app/services/scoreApi"; // ⭐ Add this
 import { router, useLocalSearchParams } from "expo-router";
+import React from "react";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function SmsHardSummary() {
   const { score } = useLocalSearchParams();
+  const numericScore = Number(score) || 0;
+
+  // ⭐ Save score on screen load
+  const saveScore = async () => {
+    try {
+      const res = await postGameScore({
+        type: "sms",     // SMS type
+        level: "hard",   // Hard level
+        score: numericScore,
+      });
+
+      console.log("SMS Hard score saved:", res);
+    } catch (err) {
+      console.log("Score save failed", err);
+      Alert.alert("Error", "Failed to save SMS hard score.");
+    }
+  };
+
+  React.useEffect(() => {
+    saveScore();
+  }, []);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>SMS Hard Level Complete 🔥</Text>
 
-      <Text style={styles.score}>Your Score: {score}</Text>
+      <Text style={styles.score}>Your Score: {numericScore}</Text>
 
       <Pressable
         style={styles.btn}

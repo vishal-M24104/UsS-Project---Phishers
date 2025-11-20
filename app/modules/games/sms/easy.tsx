@@ -1,22 +1,47 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import { fetchSMSGame } from "@/app/services/gameApi";
 import { router } from "expo-router";
-import smsData from "./sms_easy_data.json";
+import React, { useEffect, useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import useExitWarning from "../../../hooks/useExitWarning";
 
 export default function SmsEasyGame() {
+  useExitWarning("/modules/games");
+
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
-  const question = smsData[index];
+  
   const points = 50;
+  // 🔥 Fetch from backend
+  useEffect(() => {
+    fetchSMSGame("easy").then((res) => {
+      setQuestions(res.questions);
+      setLoading(false);
+    });
+  }, []);
+
+  // ⏳ Loading screen
+  if (loading) {
+    return <Text style={{ marginTop: 50, textAlign: "center" }}>Loading...</Text>;
+  }
+
+  // 🚫 No questions
+  if (!questions || questions.length === 0) {
+    return <Text style={{ marginTop: 50, textAlign: "center" }}>No questions found.</Text>;
+  }
+
+  const question = questions[index];
+  const progressPercent = ((index + 1) / questions.length) * 100;
 
   const handleAnswer = (choice: boolean) => {
     const correct = choice === question.isPhishing;
@@ -31,7 +56,7 @@ export default function SmsEasyGame() {
     setShowResult(false);
     setIsCorrect(null);
 
-    if (index + 1 < smsData.length) {
+    if (index + 1 < questions.length) {
       setIndex(index + 1);
     } else {
       router.replace({
@@ -41,15 +66,13 @@ export default function SmsEasyGame() {
     }
   };
 
-  const progressPercent = ((index + 1) / smsData.length) * 100;
-
   return (
     <ScrollView style={styles.container}>
       
       {/* TOP BAR */}
       <View style={styles.topRow}>
         <Text style={styles.topLeft}>
-          Question {index + 1}/{smsData.length}
+          Question {index + 1}/{questions.length}
         </Text>
         <Text style={styles.topRight}>Score: {score}</Text>
       </View>

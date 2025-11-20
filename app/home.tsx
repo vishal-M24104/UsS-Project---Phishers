@@ -1,17 +1,30 @@
 // app/(tabs)/home.tsx
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNav from '../app/components/BottomNav';
+import { getTotalScore } from "../app/services/scoreApi";
 import { useAuthStore } from '../app/store/authStore';
 
 export default function Home() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  
+  const [points, setPoints] = useState(0);
   // Get first name from full name or use default
   const firstName = user?.name?.split(' ')[0] || 'Guest';
-  
+  useEffect(() => {
+  async function load() {
+    try {
+      const res = await getTotalScore();
+      if (res.success) setPoints(res.totalScore);
+    } catch (err) {
+      console.log("Failed to load points", err);
+    }
+  }
+  load();
+}, []);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <ScrollView style={{ flex: 1 }}>
@@ -24,18 +37,24 @@ export default function Home() {
           paddingTop: 10
         }}>
           <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Phishers</Text>
-          <View style={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: 20, 
-            backgroundColor: '#5B5FEF',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Text style={{ fontSize: 18, color: 'white', fontWeight: 'bold' }}>
-              {user ? firstName.charAt(0).toUpperCase() : '👤'}
-            </Text>
-          </View>
+
+          <Pressable 
+  onPress={() => router.push('/profile')}
+  style={{ flexDirection: 'row', alignItems: 'center' }}
+>
+  <View style={{ 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    backgroundColor: '#5B5FEF',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }}>
+    <Text style={{ fontSize: 18, color: 'white', fontWeight: 'bold' }}>
+      {user ? firstName.charAt(0).toUpperCase() : '👤'}
+    </Text>
+  </View>
+</Pressable>
         </View>
 
         <View style={{ padding: 20, paddingTop: 0 }}>
@@ -92,7 +111,7 @@ export default function Home() {
               color: '#5B5FEF',
               marginBottom: 4
             }}>
-              1,250
+              {points}
             </Text>
             <Text style={{ color: '#666', fontSize: 14 }}>
               Keep up the great work!
@@ -101,7 +120,7 @@ export default function Home() {
 
           {/* Menu Items */}
           <Pressable 
-            onPress={() => router.push('/training')}
+            onPress={() => router.push('/modules')}
             style={{ 
               backgroundColor: 'white',
               borderRadius: 12,

@@ -5,8 +5,10 @@ import express, { Application, Request, Response } from 'express';
 import helmet from 'helmet';
 import { apiSpeedLimiter, generalLimiter } from './middleware/rateLimiter';
 import authRoutes from './routes/authRoutes';
+import gamesRoutes from "./routes/games.routes";
+import quizzesRoutes from "./routes/quizzes.routes";
+import scoreRoutes from "./routes/score.routes";
 import twoFactorRoutes from './routes/twoFactorRoutes';
-
 // Load environment variables
 dotenv.config();
 
@@ -43,7 +45,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Apply general rate limiting to all routes
 app.use(generalLimiter);
 app.use(apiSpeedLimiter);
-
+app.use("/api/score", scoreRoutes);
 // Health check route
 app.get('/', (req: Request, res: Response) => {
   res.json({
@@ -61,6 +63,10 @@ app.get('/', (req: Request, res: Response) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/2fa', twoFactorRoutes);
+
+// ⭐ ADD THESE TWO ROUTES ⭐
+app.use('/api/games', gamesRoutes);
+app.use('/api/quizzes', quizzesRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

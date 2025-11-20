@@ -1,27 +1,41 @@
+import { fetchEmailGame } from "@/app/services/gameApi";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
   Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-import { router } from "expo-router";
-import emailMediumData from "./email_medium_data.json";
+import useExitWarning from "../../../hooks/useExitWarning";
 
 export default function EmailMediumGame() {
+  useExitWarning("/modules/games");
+
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [index, setIndex] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [timeLeft, setTimeLeft] = useState(12);
 
-  const question = emailMediumData[index];
+  
   const points = 75;
-
+ // 🔥 FETCH API DATA
+  useEffect(() => {
+    fetchEmailGame("medium").then((res) => {
+      setQuestions(res.questions);
+      setLoading(false);
+    });
+  }, []);
+  
   // TIMER (text-only)
   useEffect(() => {
+    if (loading) return; 
     if (showResult) return;
 
     if (timeLeft === 0) {
@@ -35,6 +49,12 @@ export default function EmailMediumGame() {
     return () => clearTimeout(t);
   }, [timeLeft, showResult]);
 
+  // 4️⃣ NOW UI CONDITIONAL RETURN (safe)
+  if (loading || questions.length === 0) {
+    return <Text style={{ marginTop: 50, textAlign: "center" }}>Loading...</Text>;
+  }
+
+   const question = questions[index];
   const handleAnswer = (userChoice: boolean) => {
     const correct = userChoice === question.isPhishing;
 
@@ -49,7 +69,7 @@ export default function EmailMediumGame() {
     setShowResult(false);
     setTimeLeft(12);
 
-    if (index + 1 < emailMediumData.length) {
+    if (index + 1 < questions.length) {
       setIndex(index + 1);
     } else {
       router.replace({
@@ -81,7 +101,7 @@ export default function EmailMediumGame() {
     <ScrollView style={styles.container}>
       {/* HEADER */}
       <View style={styles.topBar}>
-        <Text style={styles.topLeft}>Question {index + 1}/{emailMediumData.length}</Text>
+        <Text style={styles.topLeft}>Question {index + 1}/{questions.length}</Text>
         <Text style={styles.topMiddle}>⏳ {timeLeft}s</Text>
         <Text style={styles.topRight}>Score: {score}</Text>
       </View>

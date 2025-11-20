@@ -1,19 +1,61 @@
-// app/(tabs)/profile.tsx - Updated with 2FA management
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '../app/services/api';
+import { getLeaderboard } from "../app/services/scoreApi";
 import { useAuthStore } from '../app/store/authStore';
+import { useQuizStore } from "../app/store/quizStore";
 import BottomNav from './components/BottomNav';
 
 export default function Profile() {
   const router = useRouter();
   const user = useAuthStore(s => s.user);
+  const [backendPoints, setBackendPoints] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
+
+    // ⭐ this line forces re-render when points change
+  const refreshKey = useQuizStore(s => s.points);
+
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showDisable2FAModal, setShowDisable2FAModal] = useState(false);
   const [disablePassword, setDisablePassword] = useState('');
   const [isDisabling, setIsDisabling] = useState(false);
+  const { points, completed, loadProgress } = useQuizStore();
+  const [rank, setRank] = useState<number | null>(null);
+ 
+  // load quizStore data
+useEffect(() => {
+  loadProgress();
+}, []);
+useEffect(() => {
+  (async () => {
+    const res = await getLeaderboard();
+    if (res.success) {
+      const userData = res.leaderboard.find(u => u.id === user?.id);
+      if (userData) {
+        setBackendPoints(userData.total);
+      }
+      if (userData?.scores) {
+  const finished = Object.values(userData.scores).filter(v => v > 0).length;
+  setCompletedCount(finished);
+}
+
+    }
+  })();
+}, []);
+
+// load user rank
+useEffect(() => {
+  (async () => {
+    const res = await getLeaderboard();
+    if (res.success) {
+      const list = res.leaderboard;
+      const index = list.findIndex((u) => u.id === user?.id);
+      setRank(index >= 0 ? index + 1 : null);
+    }
+  })();
+}, [refreshKey]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -148,24 +190,27 @@ export default function Profile() {
                   elevation: 3
                 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-                    <View style={{ alignItems: 'center' }}>
-                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
-                        1,250
-                      </Text>
-                      <Text style={{ color: '#666', fontSize: 12 }}>Points</Text>
-                    </View>
-                    <View style={{ alignItems: 'center' }}>
-                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
-                        15
-                      </Text>
-                      <Text style={{ color: '#666', fontSize: 12 }}>Completed</Text>
-                    </View>
-                    <View style={{ alignItems: 'center' }}>
-                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
-                        #23
-                      </Text>
-                      <Text style={{ color: '#666', fontSize: 12 }}>Rank</Text>
-                    </View>
+                    {/* POINTS */}
+<View style={{ alignItems: 'center' }}>
+  <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
+    {backendPoints}
+  </Text>
+  <Text style={{ color: '#666', fontSize: 12 }}>Points</Text>
+</View> 
+                    {/* COMPLETED QUIZZES */}
+{/* <View style={{ alignItems: 'center' }}>
+  <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
+    {Object.values(completedCount).filter(Boolean).length}
+  </Text>
+  <Text style={{ color: '#666', fontSize: 12 }}>Completed</Text>
+</View> */}
+                    {/* RANK */}
+<View style={{ alignItems: 'center' }}>
+  <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
+    {rank ?? '-'}
+  </Text>
+  <Text style={{ color: '#666', fontSize: 12 }}>Rank</Text>
+</View>
                   </View>
                 </View>
               </View>

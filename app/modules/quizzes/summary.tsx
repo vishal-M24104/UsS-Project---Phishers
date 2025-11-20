@@ -1,27 +1,47 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { postGameScore } from "@/app/services/scoreApi"; // ⭐ ADD THIS
 import { router, useLocalSearchParams } from "expo-router";
-import { useQuizStore } from "../../store/quizStore";
 import React from "react";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { useQuizStore } from "../../store/quizStore";
 
 export default function QuizSummary() {
   const { score, topic } = useLocalSearchParams();
+  const numericScore = Number(score) || 0;
   const markCompleted = useQuizStore(state => state.markCompleted);
 
-  // Emoji for each quiz topic
+  // Save both local & backend score
+  const saveQuizScore = async () => {
+    try {
+      // Local progress (your existing logic)
+      if (topic && score) {
+        markCompleted(String(topic), numericScore);
+      }
+
+      // ⭐ New backend saving
+      await postGameScore({
+        type: "quiz",              // fixed type
+        level: String(topic),      // level = topic (phishing/password/etc.)
+        score: numericScore,
+      });
+
+      console.log("Quiz score saved successfully");
+    } catch (err) {
+      console.log("Quiz score save failed:", err);
+      Alert.alert("Error", "Failed to save quiz score.");
+    }
+  };
+
+  React.useEffect(() => {
+    saveQuizScore();
+  }, []);
+
   const topicEmoji: any = {
     phishing: "📧",
     password: "🔐",
     privacy: "🛡️",
     social: "🕵️‍♂️",
-    mixed: "🧠"   // fallback for future quizzes
+    mixed: "🧠",
   };
-  
-  // Save progress when summary loads
-  React.useEffect(() => {
-    if (topic && score) {
-      markCompleted(String(topic), Number(score));
-    }
-  }, []);
 
   const emoji = topicEmoji[topic] || "🎉";
 
