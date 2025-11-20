@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String // Now encrypted
+  email     String   @unique // Now encrypted (but unique constraint on encrypted value)
+  password  String // Already hashed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String? // Already encrypted
+
+  // Relations
+  backupCodes   BackupCode[]
+  refreshTokens RefreshToken[]
+  gameScores    GameScore[]
+  @@map("users")
+}
+
+model BackupCode {
+  id        String    @id @default(uuid())
+  userId    String
+  code      String // Already hashed
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("backup_codes")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique // Hashed token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+//
+// ────────────────────────────────────────────
+// EMAIL GAME MODELS
+// ────────────────────────────────────────────
+//
+
+// Email EASY JSON:
+//
+// { sender, subject, body, isPhishing, explanation }
+//
+model GameEmailEasy {
+  id          String   @id @default(uuid())
+  sender      String
+  subject     String
+  body        String
+  isPhishing  Boolean
+  explanation String
+}
+
+// Email MEDIUM JSON:
+//
+// { sender, subject, body, isPhishing, explanation }
+//
+model GameEmailMedium {
+  id          String   @id @default(uuid())
+  sender      String
+  subject     String
+  body        String
+  isPhishing  Boolean
+  explanation String
+}
+
+// Email HARD JSON:
+//
+// { senderName, senderEmail, time, subject, body, footer, isPhishing, explanation }
+//
+model GameEmailHard {
+  id           String   @id @default(uuid())
+  senderName   String
+  senderEmail  String
+  time         String
+  subject      String
+  body         String
+  footer       String
+  isPhishing   Boolean
+  explanation  String
+}
+
+//
+// ────────────────────────────────────────────
+// SMS GAME MODELS
+// ────────────────────────────────────────────
+//
+
+model GameSMSEasy {
+  id          String   @id @default(uuid())
+  sender      String
+  message     String
+  isPhishing  Boolean
+  explanation String?
+}
+
+
+model GameSMSMedium {
+  id          String   @id @default(uuid())
+  sender      String
+  message     String
+  isPhishing  Boolean
+  explanation String?
+}
+
+
+model GameSMSHard {
+  id          String   @id @default(uuid())
+  contact     String
+  avatar      String
+  messages    Json     // <-- array of messages
+  isPhishing  Boolean
+  explanation String?
+}
+
+
+
+//
+// ────────────────────────────────────────────
+// QUIZ MODELS (password, phishing, privacy, social)
+// ────────────────────────────────────────────
+//
+// JSON:
+// { title, instructions, questions: [] }
+//
+model Quiz {
+  id           String @id @default(uuid())
+  topic        String @unique
+  title        String
+  instructions String
+  questions    Json
+}
+
+model GameScore {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // "email" | "sms" | "quiz"
+  level     String   // "easy" | "medium" | "hard"
+  score     Int
+  updatedAt DateTime @updatedAt
+
+  // 🔥 Relation to User
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 🔥 Prevent duplicate score rows
+  @@unique([userId, type, level])
+}
+
+

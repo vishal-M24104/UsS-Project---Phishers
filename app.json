@@ -14,7 +14,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.phishersapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +23,11 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.yourcompany.phishersapp",
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -35,6 +40,9 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "environment": "prod"
     }
   }
 }

@@ -1,4 +1,6 @@
-const API_BASE = "http://192.168.41.233:3000/api"; 
+import environment from '../config/environment';
+
+const API_BASE = environment.apiUrl;
 // Example on Android USB debugging: http://10.0.2.2:3000/api
 
 export async function fetchEmailGame(level: "easy" | "medium" | "hard") {

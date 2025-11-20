@@ -15,7 +15,7 @@ export default function useExitWarning(exitPath: string) {
             style: "destructive",
             onPress: () => {
               router.dismissAll();
-              router.replace(exitPath);  // ⬅ FIX: clears old stack
+              router.replace(exitPath as any);  // ⬅ FIX: clears old stack
             },
           },
         ]

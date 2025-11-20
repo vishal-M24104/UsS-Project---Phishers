@@ -1,10 +1,10 @@
-// app/services/api.ts - Fixed version
+// app/services/api.ts - Fixed version with TypeScript errors resolved
+import environment from '../config/environment';
 import { useAuthStore } from '../store/authStore';
 import { secureStorage } from './secureStorage';
 
-
 // Update this with your backend URL
-const API_BASE_URL = 'http://192.168.41.233:3000/api';
+const API_BASE_URL = environment.apiUrl;
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -31,6 +31,20 @@ interface LoginResponse {
   };
 }
 
+// Define response types for better type safety
+interface LoginApiResponse {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+  requiresTwoFactor?: boolean;
+  tempUserId?: string;
+}
+
+interface TokenRefreshResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
 class ApiService {
   private baseURL: string;
   private isRefreshing: boolean = false;
@@ -41,34 +55,31 @@ class ApiService {
   }
 
   private async getAuthToken(): Promise<string | null> {
-  try {
-    // First try Zustand store (works on native)
-    const token = useAuthStore.getState().token;
-    if (token) return token;
+    try {
+      // First try Zustand store (works on native)
+      const token = useAuthStore.getState().token;
+      if (token) return token;
 
-    // DO NOT USE localStorage ON MOBILE
-    // Only use secure storage
-    return await secureStorage.getAccessToken();
-  } catch (error) {
-    console.error("Error getting auth token:", error);
-    return null;
+      // DO NOT USE localStorage ON MOBILE
+      // Only use secure storage
+      return await secureStorage.getAccessToken();
+    } catch (error) {
+      console.error("Error getting auth token:", error);
+      return null;
+    }
   }
-}
 
+  protected async getRefreshToken(): Promise<string | null> {
+    try {
+      const token = useAuthStore.getState().refreshToken;
+      if (token) return token;
 
-
-  private async getRefreshToken(): Promise<string | null> {
-  try {
-    const token = useAuthStore.getState().refreshToken;
-    if (token) return token;
-
-    return await secureStorage.getRefreshToken();
-  } catch (error) {
-    console.error("Error getting refresh token:", error);
-    return null;
+      return await secureStorage.getRefreshToken();
+    } catch (error) {
+      console.error("Error getting refresh token:", error);
+      return null;
+    }
   }
-}
-
 
   private async refreshAccessToken(): Promise<string | null> {
     const refreshToken = await this.getRefreshToken();
@@ -91,7 +102,7 @@ class ApiService {
         throw new Error('Token refresh failed');
       }
 
-      const data = await response.json();
+      const data: ApiResponse<TokenRefreshResponse> = await response.json();
       
       if (data.success && data.data) {
         await useAuthStore.getState().updateTokens(
@@ -236,37 +247,28 @@ class AuthService extends ApiService {
     try {
       console.log('🔐 Attempting login for:', credentials.email);
       
-      const response = await this.post<any>('/auth/login', credentials);
+      const response = await this.post<LoginApiResponse>('/auth/login', credentials);
       
       console.log('🔍 Login response structure:', JSON.stringify(response, null, 2));
       
-      // Check if 2FA is required
-      if (response.requiresTwoFactor || response.data?.requiresTwoFactor) {
+      // Check if 2FA is required - check both root level and data level
+      const requiresTwoFactor = response.data?.requiresTwoFactor;
+      const tempUserId = response.data?.tempUserId;
+      
+      if (requiresTwoFactor) {
         console.log('🔒 2FA required');
         return {
           success: true,
           requiresTwoFactor: true,
-          tempUserId: response.tempUserId || response.data?.tempUserId,
+          tempUserId: tempUserId,
           message: response.message || '2FA verification required'
         };
       }
       
-      // Extract tokens from response
-      let accessToken: string;
-      let refreshToken: string;
-      let user: User;
-
-      // Handle different response structures
-      if (response.data) {
-        accessToken = response.data.accessToken;
-        refreshToken = response.data.refreshToken;
-        user = response.data.user;
-      } else {
-        // Fallback if tokens are at root level
-        accessToken = response.accessToken;
-        refreshToken = response.refreshToken;
-        user = response.user;
-      }
+      // Extract tokens and user from response.data
+      const accessToken = response.data?.accessToken;
+      const refreshToken = response.data?.refreshToken;
+      const user = response.data?.user;
 
       if (!accessToken || !refreshToken || !user) {
         console.error('❌ Missing required data in response:', { 
@@ -302,7 +304,7 @@ class AuthService extends ApiService {
     try {
       console.log('📝 Attempting signup for:', userData.email);
       
-      const response = await this.post<any>('/auth/signup', userData);
+      const response = await this.post<{ user: User }>('/auth/signup', userData);
       
       console.log('✅ Signup response:', response);
       
@@ -322,7 +324,7 @@ class AuthService extends ApiService {
   }
 
   async getCurrentUser(): Promise<User> {
-    const response = await this.get<any>('/auth/profile');
+    const response = await this.get<User>('/auth/profile');
     
     if (!response.data) {
       throw new Error('Invalid response format from server');
@@ -330,7 +332,7 @@ class AuthService extends ApiService {
     
     useAuthStore.getState().setUser(response.data);
     
-    return response.data as User;
+    return response.data;
   }
 
   async logout() {
@@ -375,7 +377,7 @@ class AuthService extends ApiService {
     try {
       console.log('🔐 Completing 2FA login for user:', userId);
       
-      const response = await this.post<any>('/auth/complete-2fa', { userId });
+      const response = await this.post<LoginApiResponse>('/auth/complete-2fa', { userId });
       
       console.log('🔍 2FA complete response:', response);
       
