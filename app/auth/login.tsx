@@ -1,4 +1,4 @@
-// app/auth/login.tsx - Fixed version
+// app/auth/login.tsx - Fixed version with eye button and black text
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native';
@@ -12,6 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     // Validation
@@ -144,6 +145,7 @@ export default function Login() {
               borderRadius: 8,
               padding: 16,
               fontSize: 16,
+              color: '#333',
               backgroundColor: isLoading ? '#F5F5F5' : 'white'
             }}
           />
@@ -154,25 +156,38 @@ export default function Login() {
           <Text style={{ color: '#333', fontWeight: '500', marginBottom: 8 }}>
             Password
           </Text>
-          <TextInput
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setError(''); // Clear error when user types
-            }}
-            placeholder="Enter your password"
-            secureTextEntry
-            autoCapitalize="none"
-            editable={!isLoading}
-            style={{
-              borderWidth: 1,
-              borderColor: error ? '#EF5B5B' : '#E5E5E5',
-              borderRadius: 8,
-              padding: 16,
-              fontSize: 16,
-              backgroundColor: isLoading ? '#F5F5F5' : 'white'
-            }}
-          />
+          <View style={{ 
+            flexDirection: 'row', 
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: error ? '#EF5B5B' : '#E5E5E5',
+            borderRadius: 8,
+            paddingHorizontal: 16,
+            backgroundColor: isLoading ? '#F5F5F5' : 'white'
+          }}>
+            <TextInput
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                setError(''); // Clear error when user types
+              }}
+              placeholder="Enter your password"
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              editable={!isLoading}
+              style={{
+                flex: 1,
+                paddingVertical: 16,
+                fontSize: 16,
+                color: '#333'
+              }}
+            />
+            <Pressable onPress={() => setShowPassword(!showPassword)}>
+              <Text style={{ fontSize: 18, color: '#999', marginLeft: 8 }}>
+                {showPassword ? '👁️' : '👁️‍🗨️'}
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Login Button */}

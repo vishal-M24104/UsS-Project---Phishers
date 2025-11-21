@@ -11,43 +11,15 @@ export default function LearningModules() {
       id: 1,
       icon: '🎮',
       title: 'Games',
-      description: 'Engaging activities to make learning',
+      description: 'Engaging activities to make learning fun and interactive',
       color: '#E3F2FD'
     },
-    // {
-    //   id: 2,
-    //   icon: '📹',
-    //   title: 'Video Lectures',
-    //   description: 'Comprehensive lessons and expert',
-    //   color: '#F3E5F5'
-    // },
-    // {
-    //   id: 3,
-    //   icon: '🧪',
-    //   title: 'Experiments',
-    //   description: 'Hands-on practical tasks to apply',
-    //   color: '#E8F5E9'
-    // },
     {
       id: 4,
       icon: '❓',
       title: 'Quizzes',
-      description: 'Test your knowledge with',
+      description: 'Test your knowledge with interactive quizzes',
       color: '#FFF3E0'
-    },
-    {
-      id: 5,
-      icon: '📝',
-      title: 'Tutorials',
-      description: 'Step-by-step guides to master',
-      color: '#FCE4EC'
-    },
-    {
-      id: 6,
-      icon: '📂',
-      title: 'Case Studies',
-      description: 'Real-world examples and',
-      color: '#F1F8E9'
     }
   ];
 
@@ -71,14 +43,14 @@ export default function LearningModules() {
         }}>
           {modules.map((module) => (
             <Pressable 
-    key={module.id}
-    onPress={() => {
-      if (module.title === 'Games') {
-        router.push('/modules/games');
-      } else if (module.title === 'Quizzes') {
-        router.push('/modules/quizzes');   // <-- ADDED
-      }
-    }}
+              key={module.id}
+              onPress={() => {
+                if (module.title === 'Games') {
+                  router.push('/modules/games');
+                } else if (module.title === 'Quizzes') {
+                  router.push('/modules/quizzes');
+                }
+              }}
               style={{ 
                 width: '48%',
                 backgroundColor: module.color,

@@ -1,48 +1,49 @@
-{
-  "expo": {
-    "name": "phishers-app",
-    "slug": "phishers-app",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "phishersapp",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.phishersapp"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+  {
+    "expo": {
+      "name": "phishers-app",
+      "slug": "phishers-app",
+      "version": "1.0.0",
+      "orientation": "portrait",
+      "icon": "./assets/logo.png",
+      "scheme": "phishersapp",
+      "userInterfaceStyle": "automatic",
+      "newArchEnabled": true,
+      "splash": {
+        "image": "./assets/images/splash-icon.png",
+        "resizeMode": "contain",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.yourcompany.phishersapp",
-      "permissions": [
-        "android.permission.INTERNET"
-      ]
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store"
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "environment": "prod"
+      "ios": {
+        "supportsTablet": true,
+        "bundleIdentifier": "com.yourcompany.phishersapp"
+      },
+      "android": {
+        "adaptiveIcon": {
+          "foregroundImage": "./assets/logo.png",
+          "backgroundColor": "#ffffff"
+        },
+        "icon": "./assets/logo.png",
+        "edgeToEdgeEnabled": true,
+        "predictiveBackGestureEnabled": false,
+        "package": "com.yourcompany.phishersapp",
+        "permissions": [
+          "android.permission.INTERNET"
+        ]
+      },
+      "web": {
+        "bundler": "metro",
+        "output": "static",
+        "favicon": "./assets/images/favicon.png"
+      },
+      "plugins": [
+        "expo-router",
+        "expo-secure-store"
+      ],
+      "experiments": {
+        "typedRoutes": true
+      },
+      "extra": {
+        "environment": "prod"
+      }
     }
   }
-}

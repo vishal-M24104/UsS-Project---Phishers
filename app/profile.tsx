@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '../app/services/api';
-import { getLeaderboard } from "../app/services/scoreApi";
+import { getLeaderboard, LeaderboardUser } from "../app/services/scoreApi";
 import { useAuthStore } from '../app/store/authStore';
 import { useQuizStore } from "../app/store/quizStore";
 import BottomNav from './components/BottomNav';
@@ -14,7 +14,7 @@ export default function Profile() {
   const [backendPoints, setBackendPoints] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
 
-    // ⭐ this line forces re-render when points change
+  // ⭐ this line forces re-render when points change
   const refreshKey = useQuizStore(s => s.points);
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -25,37 +25,66 @@ export default function Profile() {
   const [rank, setRank] = useState<number | null>(null);
  
   // load quizStore data
-useEffect(() => {
-  loadProgress();
-}, []);
-useEffect(() => {
-  (async () => {
-    const res = await getLeaderboard();
-    if (res.success) {
-      const userData = res.leaderboard.find(u => u.id === user?.id);
-      if (userData) {
-        setBackendPoints(userData.total);
+  useEffect(() => {
+    loadProgress();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        console.log('Fetching leaderboard for points...');
+        const res = await getLeaderboard();
+        console.log('Leaderboard response:', res);
+        
+        if (res.success && res.leaderboard) {
+          // User ID is a string, no need to convert
+          const userId = user?.id;
+          console.log('User ID:', userId);
+          console.log('Leaderboard:', res.leaderboard);
+          
+          const userData = res.leaderboard.find((u: LeaderboardUser) => u.id === userId);
+          console.log('User data found:', userData);
+          
+          if (userData) {
+            console.log('Setting points:', userData.total);
+            setBackendPoints(userData.total);
+          }
+          if (userData?.scores) {
+            const finished = Object.values(userData.scores).filter((v: number) => v > 0).length;
+            setCompletedCount(finished);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching points:', error);
       }
-      if (userData?.scores) {
-  const finished = Object.values(userData.scores).filter(v => v > 0).length;
-  setCompletedCount(finished);
-}
+    })();
+  }, [user?.id]);
 
-    }
-  })();
-}, []);
-
-// load user rank
-useEffect(() => {
-  (async () => {
-    const res = await getLeaderboard();
-    if (res.success) {
-      const list = res.leaderboard;
-      const index = list.findIndex((u) => u.id === user?.id);
-      setRank(index >= 0 ? index + 1 : null);
-    }
-  })();
-}, [refreshKey]);
+  // load user rank
+  useEffect(() => {
+    (async () => {
+      try {
+        console.log('Fetching leaderboard for rank...');
+        const res = await getLeaderboard();
+        
+        if (res.success && res.leaderboard) {
+          const list = res.leaderboard;
+          // User ID is a string, no need to convert
+          const userId = user?.id;
+          console.log('Looking for rank with user ID:', userId);
+          
+          const index = list.findIndex((u: LeaderboardUser) => u.id === userId);
+          console.log('User index:', index);
+          
+          const calculatedRank = index >= 0 ? index + 1 : null;
+          console.log('Setting rank:', calculatedRank);
+          setRank(calculatedRank);
+        }
+      } catch (error) {
+        console.error('Error fetching rank:', error);
+      }
+    })();
+  }, [refreshKey, user?.id]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -191,26 +220,20 @@ useEffect(() => {
                 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     {/* POINTS */}
-<View style={{ alignItems: 'center' }}>
-  <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
-    {backendPoints}
-  </Text>
-  <Text style={{ color: '#666', fontSize: 12 }}>Points</Text>
-</View> 
-                    {/* COMPLETED QUIZZES */}
-{/* <View style={{ alignItems: 'center' }}>
-  <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
-    {Object.values(completedCount).filter(Boolean).length}
-  </Text>
-  <Text style={{ color: '#666', fontSize: 12 }}>Completed</Text>
-</View> */}
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
+                        {backendPoints}
+                      </Text>
+                      <Text style={{ color: '#666', fontSize: 12 }}>Points</Text>
+                    </View>
+                    
                     {/* RANK */}
-<View style={{ alignItems: 'center' }}>
-  <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
-    {rank ?? '-'}
-  </Text>
-  <Text style={{ color: '#666', fontSize: 12 }}>Rank</Text>
-</View>
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#5B5FEF' }}>
+                        {rank ?? '-'}
+                      </Text>
+                      <Text style={{ color: '#666', fontSize: 12 }}>Rank</Text>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -249,36 +272,6 @@ useEffect(() => {
                       fontWeight: user.twoFactorEnabled ? '600' : '400'
                     }}>
                       {user.twoFactorEnabled ? '✓ Enabled' : 'Not enabled'}
-                    </Text>
-                  </View>
-                  <Text style={{ fontSize: 20, color: '#CCC' }}>›</Text>
-                </Pressable>
-              </View>
-              
-              {/* Other Settings */}
-              <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 12 }}>
-                  Settings
-                </Text>
-                
-                <Pressable 
-                  style={{ 
-                    backgroundColor: 'white',
-                    borderRadius: 12,
-                    padding: 16,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                    elevation: 3
-                  }}
-                >
-                  <Text style={{ fontSize: 20, marginRight: 12 }}>🔔</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 16, fontWeight: '500' }}>
-                      Notifications
                     </Text>
                   </View>
                   <Text style={{ fontSize: 20, color: '#CCC' }}>›</Text>

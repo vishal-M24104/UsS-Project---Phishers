@@ -1,4 +1,4 @@
-// app/auth/signup.tsx - Updated to redirect to login after signup
+// app/auth/signup.tsx - Updated with @iiitd.ac.in support
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
@@ -36,11 +36,11 @@ export default function SignUp() {
       if (!emailRegex.test(text)) {
         setEmailError('Please enter a valid email address');
       } else {
-        // Check for valid email providers
-        const validProviders = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'protonmail.com'];
+        // Check for valid email providers including IIITD
+        const validProviders = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'protonmail.com', 'iiitd.ac.in'];
         const domain = text.toLowerCase().split('@')[1];
         if (!validProviders.includes(domain)) {
-          setEmailError('Please use a valid email provider (Gmail, Yahoo, Outlook, etc.)');
+          setEmailError('Please use a valid email provider (Gmail, Yahoo, Outlook, IIITD, etc.)');
         }
       }
     }
